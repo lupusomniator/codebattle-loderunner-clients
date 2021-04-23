@@ -1,13 +1,8 @@
 from loderunnerclient.internals.actions import LoderunnerAction
 from loderunnerclient.internals.point import Point
-from loderunnerclient.internals.element import Element, _ELEMENTS
+from loderunnerclient.internals.element import Element
+from loderunnerclient.internals.constants import *
 
-ELEMENTS_CAN_FLIED = [
-    'NONE',
-    'YELLOW_GOLD',
-    'GREEN_GOLD',
-    'RED_GOLD'
-]
 
 class ElementActionHandler:
     @staticmethod

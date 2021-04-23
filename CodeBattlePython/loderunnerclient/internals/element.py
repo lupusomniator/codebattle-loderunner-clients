@@ -1,4 +1,5 @@
-from constants import *
+from loderunnerclient.internals.constants import _ELEMENTS, _ACTOR_ELEMENTS, _ELEMENT_TO_INDEX, _INDEX_TO_ELEMENT, _STATIC_ELEMENTS
+from typing import Iterable, Union, Optional, Tuple
 
 def index_to_char(index):
     return _INDEX_TO_ELEMENT[index]

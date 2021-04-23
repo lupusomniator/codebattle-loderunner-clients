@@ -107,6 +107,13 @@ _STATIC_ELEMENTS = {
     "PORTAL"
 }
 
+ELEMENTS_CAN_FLIED = {
+    'NONE',
+    'YELLOW_GOLD',
+    'GREEN_GOLD',
+    'RED_GOLD'
+}
+
 ElementsCount = len(_ELEMENTS)
 
 _INDEX_TO_ELEMENT = {}

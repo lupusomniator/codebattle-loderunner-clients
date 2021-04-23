@@ -2,9 +2,10 @@ import random
 import time
 from loderunnerclient.internals.actions import LoderunnerAction
 from loderunnerclient.internals.board import Board
-from loderunnerclient.internals.element import ElementsCount, is_actor
+from loderunnerclient.internals.element import is_actor
 from loderunnerclient.elements_actions_handler import ElementActionHandler
 from loderunnerclient.internals.point import Point
+from loderunnerclient.internals.constants import *
 
 def print_table(table):
     for line in table:
@@ -101,13 +102,16 @@ class Game:
                 self.mutable_board,
                 self.static_board
             ))
+
         # Падение героев и врагов
         not_holding_actors = self.find_all_not_holding_actors()
         for point, element in not_holding_actors:
-            down_element = self.mutable_board[point.get_x() + 1][point.get_y()]
-            if down_element:
+            x, y = point.get_x(), point.get_y()
+            down_element = self.mutable_board[x + 1][y]
+            if down_element.get_name() in ELEMENTS_CAN_FLIED:
                 new_elements_list.extend([
-                    Point(point.get_x(), )
+                    (Point(x, y), self.static_board[x + 1][y])
+                    (Point(x + 1, y), element)
                 ])
         # TODO: enemy stategy
         return new_elements_list

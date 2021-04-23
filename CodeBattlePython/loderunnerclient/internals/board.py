@@ -1,7 +1,9 @@
 from math import sqrt
 import numpy as np
-from loderunnerclient.internals.element import Element, value_of, index_to_char, char_to_index, _STATIC_ELEMENTS
+from loderunnerclient.internals.element import Element, value_of, index_to_char, char_to_index
 from loderunnerclient.internals.point import Point
+from loderunnerclient.internals.constants import _STATIC_ELEMENTS
+
 
 
 class Board:
