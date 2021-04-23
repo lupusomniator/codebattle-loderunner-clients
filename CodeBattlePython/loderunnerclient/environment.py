@@ -242,6 +242,19 @@ class Environment:
         return get_action_by_num(int(self.agent.act(state)))
     
     def on_turn(self, board):
+        # user_input = input()
+        # if user_input == "w":
+        #     return LoderunnerAction.GO_UP
+        # if user_input == "s":
+        #     return LoderunnerAction.GO_DOWN
+        # if user_input == "a":
+        #     return LoderunnerAction.GO_LEFT
+        # if user_input == "d":
+        #     return LoderunnerAction.GO_RIGHT
+        # if user_input == "q":
+        #     return LoderunnerAction.DRILL_LEFT
+        # if user_input == "e":
+        #     return LoderunnerAction.DRILL_RIGHT
         try:
             # Такая грануляция только лишь для того, чтобы это удобно было читать
             self.turn_num += 1

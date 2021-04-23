@@ -9,6 +9,7 @@ ELEMENTS_CAN_FLIED = [
     'RED_GOLD'
 ]
 
+
 class ElementActionHandler:
     @staticmethod
     def apply(p: Point, action: LoderunnerAction, table, staitc_table):
@@ -49,7 +50,35 @@ class ElementActionHandler:
             newp = Point(p.get_x() - 1, p.get_y())
             return ElementActionHandler.go_up_handler(p, newp, table, staitc_table)
 
+        if action == action.DRILL_LEFT:
+            return ElementActionHandler.drill_left_handler(p, table, staitc_table)
+
+        if action == action.DRILL_RIGHT:
+            return ElementActionHandler.drill_right_handler(p, table, staitc_table)
+
         return []
+
+    @staticmethod
+    def drill_left_handler(p: Point, table, static_table):
+        target = table[p.get_x() + 1][p.get_y() - 1]
+        if target.get_name() != 'BRICK':
+            return []
+
+        return [
+            (p, Element('HERO_DRILL_LEFT')),
+            (Point(p.get_x() + 1, p.get_y() - 1), Element('DRILL_PIT'))
+        ]
+
+    @staticmethod
+    def drill_right_handler(p: Point, table, static_table):
+        target = table[p.get_x() + 1][p.get_y() + 1]
+        if target.get_name() != 'BRICK':
+            return []
+
+        return [
+            (p, Element('HERO_DRILL_RIGHT')),
+            (Point(p.get_x() + 1, p.get_y() + 1), Element('DRILL_PIT'))
+        ]
 
     @staticmethod
     def go_down_handler(p: Point, newp: Point, table, static_table):
