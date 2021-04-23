@@ -1,6 +1,6 @@
 from math import sqrt
 import numpy as np
-from loderunnerclient.internals.element import Element, value_of, index_to_char, char_to_index
+from loderunnerclient.internals.element import Element, value_of, index_to_char, char_to_index, _STATIC_ELEMENTS
 from loderunnerclient.internals.point import Point
 
 
@@ -28,14 +28,18 @@ class Board:
             
         for i, c in enumerate(self._string):
             x, y = self._strpos2xy(i)
-            table[x + indent[0], y + indent[1]] = char_to_index(c)
-        return table 
+            table[y + indent[0], x + indent[1]] = char_to_index(c)
+        return table
 
-    def get_elements_table(self):
+    def get_elements_table(self, static_only):
         table = [[0 for _ in range(self._size)] for _ in range(self._size)]
         for i, c in enumerate(self._string):
             x, y = self._strpos2xy(i)
-            table[x][y] = Element(value_of(c))
+            if not static_only or value_of(c) in _STATIC_ELEMENTS:
+                table[y][x] = Element(value_of(c))
+            else:
+                table[y][x] = Element(value_of(" "))
+            
         return table
 
     def get_at(self, x, y):
@@ -139,6 +143,12 @@ class Board:
         points = set()
         points.update(self._find_all(Element("BRICK")))
         points.update(self._find_all(Element("UNDESTROYABLE_WALL")))
+        return list(points)
+
+    def get_brick_positions(self):
+        """ Returns the list of walls Element Points."""
+        points = set()
+        points.update(self._find_all(Element("BRICK")))
         return list(points)
 
     def get_ladder_positions(self):

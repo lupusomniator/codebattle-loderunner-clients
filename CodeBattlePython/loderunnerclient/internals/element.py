@@ -58,6 +58,15 @@ _ELEMENTS = dict(
     THE_SHADOW_PILL="S",
 )
 
+_STATIC_ELEMENTS = [
+    "BRICKS",
+    "UNDESTROYABLE_WALL",
+    "DRILL_PIT",
+    "LADDER",
+    "PIPE",
+    "PORTAL"
+]
+
 ElementsCount = len(_ELEMENTS)
 
 _INDEX_TO_ELEMENT = {}

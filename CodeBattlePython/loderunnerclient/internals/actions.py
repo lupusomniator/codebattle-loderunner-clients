@@ -16,6 +16,7 @@ class LoderunnerAction(AutoNumber):
     DRILL_LEFT = "act,left"
     DO_NOTHING = "stop"
     SUICIDE = "act(0)"
+    TICK = "tick"
 
 def get_action_by_num(num):
     return list(LoderunnerAction)[num]

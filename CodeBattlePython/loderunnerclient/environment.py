@@ -124,9 +124,9 @@ class Environment:
         gold_reward = calc_gold_reward(gold_positions, my_pos)
 
         reward = gold_reward - prev_gold_reward
+        reward -= (reward == 0) * self.count_undone_turns
         if len(self.actions) > 0:
             reward -= 1000 * (current_board.is_game_over() or self.actions[-1] == LoderunnerAction.SUICIDE)
-        reward -= self.count_undone_turns
         return reward
 
     def __gold_was_taken__(self):
@@ -249,6 +249,16 @@ class Environment:
             self.__on_turn_start__(board)
             action = self.__on_turn__()
             self.__on_turn_end__(action)
+            if action == LoderunnerAction.SUICIDE:
+                action = LoderunnerAction.DO_NOTHING
+            if self.count_undone_turns > 100:
+                self.count_undone_turns = 0
+                action = LoderunnerAction.SUICIDE
+            if len(self.actions) > 1 and self.actions[-2] == self.actions[-2] and self.__get_reward__() < -20:
+                if action == LoderunnerAction.GO_LEFT:
+                    action = LoderunnerAction.GO_RIGHT
+                elif action == LoderunnerAction.GO_RIGHT:
+                    action = LoderunnerAction.GO_LEFT
             return action
         except Exception:
             traceback.print_exc()
