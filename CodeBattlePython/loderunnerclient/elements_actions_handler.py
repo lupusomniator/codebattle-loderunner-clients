@@ -2,22 +2,38 @@ from loderunnerclient.internals.actions import LoderunnerAction
 from loderunnerclient.internals.point import Point
 from loderunnerclient.internals.element import Element, _ELEMENTS
 
+ELEMENTS_CAN_FLIED = [
+    'NONE',
+    'YELLOW_GOLD',
+    'GREEN_GOLD',
+    'RED_GOLD'
+]
 
 class ElementActionHandler:
     @staticmethod
     def apply(p: Point, action: LoderunnerAction, table, staitc_table):
-        if action == action.DO_NOTHING:
+        if action == LoderunnerAction.TICK:
             return []
 
         cur_elem = staitc_table[p.get_x()][p.get_y()]
-
-        print(cur_elem)
 
         if action == action.SUICIDE:
             return [
                 (p, cur_elem),
                 #     появление в рандомном месте!
             ]
+
+        elem_under_cur = table[p.get_x() + 1][p.get_y()]
+
+        if cur_elem.get_name() == 'NONE' and elem_under_cur.get_name() in ELEMENTS_CAN_FLIED:
+            return [
+                (p, cur_elem),
+                # учитывать направление
+                (Point(p.get_x() + 1, p.get_y()), Element('HERO_FALL_RIGHT'))
+            ]
+
+        if action == action.DO_NOTHING:
+            return []
 
         if action == action.GO_RIGHT:
             return ElementActionHandler.go_right_handler(p, table, staitc_table)
@@ -26,21 +42,20 @@ class ElementActionHandler:
             return ElementActionHandler.go_left_handler(p, table, staitc_table)
 
         if action == action.GO_DOWN:
-            newp = Point(p.get_x() - 1, p.get_y())
+            newp = Point(p.get_x() + 1, p.get_y())
             return ElementActionHandler.go_down_handler(p, newp, table, staitc_table)
 
         if action == action.GO_UP:
-            newp = Point(p.get_x() + 1, p.get_y())
+            newp = Point(p.get_x() - 1, p.get_y())
             return ElementActionHandler.go_up_handler(p, newp, table, staitc_table)
 
         return []
 
     @staticmethod
-    def go_up_handler(p: Point, newp: Point, table, static_table):
+    def go_down_handler(p: Point, newp: Point, table, static_table):
         result = []
         cur_static_elem = static_table[p.get_x()][p.get_y()]
         new_elem = table[newp.get_x()][newp.get_y()]
-
         if new_elem.get_name() == 'LADDER':
             result.append((p, cur_static_elem))
             result.append((newp, Element('HERO_LADDER')))
@@ -49,21 +64,31 @@ class ElementActionHandler:
             result.append((p, cur_static_elem))
             result.append((newp, Element('HERO_FALL_LEFT')))
 
-        if cur_static_elem.get_name() == 'LADDER' and new_elem.get_name() == 'NONE':
-            result.append((p, cur_static_elem))
-            result.append((newp, Element('HERO_RIGHT')))
+        if cur_static_elem.get_name() == 'LADDER' and new_elem.get_name() in ELEMENTS_CAN_FLIED:
+            return [
+                (p, cur_static_elem),
+                (newp, Element('HERO_FALL_RIGHT'))
+            ]
 
         return result
 
     @staticmethod
-    def go_down_handler(p: Point, newp: Point, table, staitc_table):
+    def go_up_handler(p: Point, newp: Point, table, staitc_table):
         result = []
         cur_static_elem = staitc_table[p.get_x()][p.get_y()]
         new_elem = table[newp.get_x()][newp.get_y()]
 
-        if new_elem.get_name() == 'LADDER':
-            result.append((p, cur_static_elem))
-            result.append((newp, Element('HERO_LADDER')))
+        if cur_static_elem.get_name() == 'LADDER' and new_elem.get_name() == 'LADDER':
+            return [
+                (p, cur_static_elem),
+                (newp, Element('HERO_LADDER'))
+            ]
+
+        if cur_static_elem.get_name() == 'LADDER' and new_elem.get_name() == 'NONE':
+            return [
+                (p, cur_static_elem),
+                (newp, Element('HERO_RIGHT'))
+            ]
 
         return result
 
@@ -135,7 +160,7 @@ class ElementActionHandler:
                 result.append((newp, Element('HERO_SHADOW_LEFT')))
                 return result
         return result
-    
+
     @staticmethod
     def is_valid_replacement(point, element, table):
         return True
