@@ -2,7 +2,7 @@ import random
 import time
 from loderunnerclient.internals.actions import LoderunnerAction
 from loderunnerclient.internals.board import Board
-from loderunnerclient.internals.element import is_actor
+from loderunnerclient.internals.element import is_actor, is_holding_actor
 from loderunnerclient.elements_actions_handler import ElementActionHandler
 from loderunnerclient.internals.point import Point
 from loderunnerclient.internals.constants import *
@@ -110,7 +110,7 @@ class Game:
             down_element = self.mutable_board[x + 1][y]
             if down_element.get_name() in ELEMENTS_CAN_FLIED:
                 new_elements_list.extend([
-                    (Point(x, y), self.static_board[x + 1][y])
+                    (Point(x, y), self.static_board[x + 1][y]),
                     (Point(x + 1, y), element)
                 ])
         # TODO: enemy stategy
