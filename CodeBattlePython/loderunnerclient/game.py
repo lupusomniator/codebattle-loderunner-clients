@@ -180,7 +180,6 @@ class Game:
             if render:
                 print_table(self.mutable_board)
                 print("=" * 30)
-                time.sleep(1)
 
 if __name__ == "__main__":
     board = Board.load_from_file("last_board")
