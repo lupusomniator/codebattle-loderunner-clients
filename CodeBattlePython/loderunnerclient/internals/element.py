@@ -1,4 +1,5 @@
 _ELEMENTS = dict(
+    OUT_OF_WINDOW="!",
     NONE=" ",
     # walls
     BRICK="#",
@@ -57,6 +58,23 @@ _ELEMENTS = dict(
     THE_SHADOW_PILL="S",
 )
 
+ElementsCount = len(_ELEMENTS)
+
+_INDEX_TO_ELEMENT = {}
+_ELEMENT_TO_INDEX = {}
+
+for i, el in enumerate(sorted(_ELEMENTS.values())):
+    _ELEMENT_TO_INDEX[el] = i
+    _INDEX_TO_ELEMENT[i] = el
+
+def index_to_char(index):
+    return _INDEX_TO_ELEMENT[index]
+
+def char_to_index(char):
+    if char in _ELEMENT_TO_INDEX:
+        return _ELEMENT_TO_INDEX[char]
+    else:
+        return _ELEMENT_TO_INDEX[" "]
 
 def value_of(char):
     """ Test whether the char is valid Element and return it's name."""
@@ -83,6 +101,10 @@ class Element:
     def get_char(self):
         """ Return the Element's character."""
         return self._char
+
+    def get_name(self):
+        """ Return the Element's character."""
+        return self._name
 
     def __eq__(self, otherElement):
         return self._name == otherElement._name and self._char == otherElement._char

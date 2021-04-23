@@ -1,26 +1,22 @@
 import logging
-import random
-
-from loderunnerclient.internals.actions import LoderunnerAction
-from loderunnerclient.internals.board import Board
 from loderunnerclient.game_client import GameClient
+
+from environment import Environment
+
 
 logging.basicConfig(format="%(asctime)s %(levelname)s:%(message)s", level=logging.INFO)
 
-
-def turn(gcb: Board):
-    # send random one of possible commands
-    action_id = random.randint(0, len(LoderunnerAction) - 1)
-    return list(LoderunnerAction)[action_id]
-
-
 def main():
+    env = Environment()
     gcb = GameClient(
         # change this url to your
-        "http://some-server-address/codenjoy-contest/board/player/jxt3idzs6w9qc1f0tesr?code=3866554102209272582&gameName=loderunner"
+        "https://dojorena.io/codenjoy-contest/board/player/dojorena392?code=407418550408423703"
     )
-    gcb.run(turn)
+    gcb.run(env.on_turn)
 
 
 if __name__ == "__main__":
+    # Board.load_from_file("last_board")
+    # for i in range(10000):
+        # turn(Board.load_from_file("last_board"))
     main()

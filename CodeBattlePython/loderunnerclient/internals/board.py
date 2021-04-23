@@ -1,6 +1,6 @@
 from math import sqrt
-
-from loderunnerclient.internals.element import Element
+import numpy as np
+from loderunnerclient.internals.element import Element, value_of, index_to_char, char_to_index
 from loderunnerclient.internals.point import Point
 
 
@@ -20,7 +20,23 @@ class Board:
         for i, c in enumerate(self._string):
             if c == _a_char:
                 _points.append(self._strpos2pt(i))
-        return _points
+        return _points        
+
+    def get_index_table(self, indent):
+        table = np.zeros((self._size + indent[0] * 2, self._size + indent[1] * 2)) + ord("!")
+        assert self._size * self._size == len(list(self._string)), (self._size * self._size, len(list(self._string)))
+            
+        for i, c in enumerate(self._string):
+            x, y = self._strpos2xy(i)
+            table[x + indent[0], y + indent[1]] = char_to_index(c)
+        return table 
+
+    def get_elements_table(self):
+        table = [[0 for _ in range(self._size)] for _ in range(self._size)]
+        for i, c in enumerate(self._string):
+            x, y = self._strpos2xy(i)
+            table[x][y] = Element(value_of(c))
+        return table
 
     def get_at(self, x, y):
         """ Return an Element object at coordinates x,y."""
@@ -223,6 +239,13 @@ class Board:
     def _xy2strpos(self, x, y):
         return self._size * y + x
 
+    def save_to_file(self, file_path):
+        with open(file_path, "w") as file:
+            file.write(" ".join(map(lambda x: str(char_to_index(x)), self._string)))
+
+    def load_from_file(file_path):
+        with open(file_path, "r") as file:
+            return Board("".join(index_to_char(int(x)) for x in file.read().split()))
 
 if __name__ == "__main__":
     raise RuntimeError("This module is not designed to be ran from CLI")
