@@ -98,7 +98,16 @@ _ACTOR_ELEMENTS = dict(
     ENEMY_PIT="X",
 )
 
-_ELEMENTS_COUNT = len(_ELEMENTS)
+_STATIC_ELEMENTS = {
+    "BRICKS",
+    "UNDESTROYABLE_WALL",
+    "DRILL_PIT",
+    "LADDER",
+    "PIPE",
+    "PORTAL"
+}
+
+ElementsCount = len(_ELEMENTS)
 
 _INDEX_TO_ELEMENT = {}
 _ELEMENT_TO_INDEX = {}

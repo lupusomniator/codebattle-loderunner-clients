@@ -12,11 +12,27 @@ def print_table(table):
             print(element.get_char(), end="")
         print()
 
+def ask_for_next_action():
+    print("input next action:", end="")
+    user_input = input()
+    if user_input == "w":
+        return LoderunnerAction.GO_UP
+    if user_input == "s":
+        return LoderunnerAction.GO_DOWN
+    if user_input == "a":
+        return LoderunnerAction.GO_LEFT
+    if user_input == "d":
+        return LoderunnerAction.GO_RIGHT
+    if user_input == "q":
+        return LoderunnerAction.DRILL_LEFT
+    if user_input == "e":
+        return LoderunnerAction.DRILL_RIGHT
+    assert False
+
 class Game:
     def __init__(self, board):
         self.mutable_board = board.get_elements_table(static_only=False)
         self.static_board = board.get_elements_table(static_only=True)
-        # self.load_elements_from_board(self.board)
         self.brick_positions = board.get_brick_positions()      
         print_table(self.mutable_board)
 
@@ -53,7 +69,6 @@ class Game:
         elements_list : list of tuples
             Список пар: координата точки и объект Element, который теперь будет содержаться в этой точке
         """
-        print(elements_list)
         for point, element in elements_list:
             is_valid = ElementActionHandler.is_valid_replacement(
                 point,
@@ -107,6 +122,13 @@ class Game:
             for point in users_points
         ]
 
+    def find_hero(self):
+        for i, line in enumerate(self.mutable_board):
+            for j, element in enumerate(line):
+                if element.get_name().startswith("HERO"):
+                    return (Point(i, j), element)
+        
+
     def run(self, ticks=100, render=False):
         """
         Запускает игру
@@ -121,7 +143,7 @@ class Game:
 
         """
         for i in range(ticks):
-            self.do_tick(self.get_random_users_actions())
+            self.do_tick([(self.find_hero()[0], ask_for_next_action())])
             if render:
                 print_table(self.mutable_board)
                 print("=" * 30)
