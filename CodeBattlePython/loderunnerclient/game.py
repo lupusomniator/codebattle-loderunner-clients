@@ -2,7 +2,7 @@ import random
 import time
 from loderunnerclient.internals.actions import LoderunnerAction
 from loderunnerclient.internals.board import Board
-from loderunnerclient.internals.element import ElementsCount
+from loderunnerclient.internals.element import ElementsCount, is_actor
 from loderunnerclient.elements_actions_handler import ElementActionHandler
 from loderunnerclient.internals.point import Point
 
@@ -93,6 +93,7 @@ class Game:
 
         """
         new_elements_list = []
+        # Зарастание ям
         for point in self.brick_positions:
             new_elements_list.extend(ElementActionHandler.apply(
                 point,
@@ -100,6 +101,14 @@ class Game:
                 self.mutable_board,
                 self.static_board
             ))
+        # Падение героев и врагов
+        not_holding_actors = self.find_all_not_holding_actors()
+        for point, element in not_holding_actors:
+            down_element = self.mutable_board[point.get_x() + 1][point.get_y()]
+            if down_element:
+                new_elements_list.extend([
+                    Point(point.get_x(), )
+                ])
         # TODO: enemy stategy
         return new_elements_list
 
@@ -121,6 +130,30 @@ class Game:
             (point, list(LoderunnerAction)[random.randint(0, len(LoderunnerAction) - 3)])
             for point in users_points
         ]
+
+    def find_all_heroes(self):
+        heroes = []
+        for i, line in enumerate(self.mutable_board):
+            for j, element in enumerate(line):
+                if element.get_name().startswith("HERO") or element.get_name().startswith("OTHER_HERO"):
+                    heroes.append((Point(i, j), element))
+        return heroes    
+
+    def find_all_holding_actors(self):
+        heroes = []
+        for i, line in enumerate(self.mutable_board):
+            for j, element in enumerate(line):
+                if is_holding_actor(element):
+                    heroes.append((Point(i, j), element))
+        return heroes    
+
+    def find_all_not_holding_actors(self):
+        heroes = []
+        for i, line in enumerate(self.mutable_board):
+            for j, element in enumerate(line):
+                if is_actor(element) and not is_holding_actor(element):
+                    heroes.append((Point(i, j), element))
+        return heroes
 
     def find_hero(self):
         for i, line in enumerate(self.mutable_board):
