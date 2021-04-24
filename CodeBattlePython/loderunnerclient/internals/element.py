@@ -1,7 +1,8 @@
 from loderunnerclient.internals.constants import (_ELEMENTS, _HERO_ELEMENTS,
                                                   _ACTOR_ELEMENTS, _ELEMENT_TO_INDEX,
                                                   _INDEX_TO_ELEMENT, _STATIC_ELEMENTS,
-                                                  _ENEMY_ELEMENTS)
+                                                  _ENEMY_ELEMENTS, _HEROES_TO_FALL_MAP,
+                                                  _HEROES_TO_PIPE_MAP)
 from typing import Iterable, Union, Optional, Tuple
 
 
@@ -87,6 +88,20 @@ def is_enemy(value: Union[str, Element]):
 
 def is_pit_fill(value: Union[str, Element]):
     return "PIT_FILL" in to_element(value).get_name()
+
+def to_falling(value: Union[str, Element]):
+    el = to_element(value)
+    if el.get_name() in _HEROES_TO_FALL_MAP:
+        return Element(_HEROES_TO_FALL_MAP[el.get_name()])
+
+    return el
+
+def to_pipe(value: Union[str, Element]):
+    el = to_element(value)
+    if el.get_name() in _HEROES_TO_PIPE_MAP:
+        return Element(_HEROES_TO_PIPE_MAP[el.get_name()])
+
+    return el
 
 
 if __name__ == "__main__":

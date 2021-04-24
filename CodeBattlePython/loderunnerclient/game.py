@@ -4,16 +4,18 @@ from collections import defaultdict
 from loderunnerclient.internals.actions import LoderunnerAction
 from loderunnerclient.internals.board import Board
 from loderunnerclient.internals.element import (Element, is_actor, is_holding_actor,
-                                                is_hero, is_enemy, is_gold, is_pit_fill)
+                                                is_hero, is_enemy, is_gold, is_pit_fill, to_falling, to_pipe)
 from loderunnerclient.elements_actions_handler import ElementActionHandler, MapChangeType, MapChange
 from loderunnerclient.internals.point import Point
 from loderunnerclient.internals.constants import _ELEMENTS_CAN_FLIED
+
 
 def print_table(table):
     for line in table:
         for element in line:
             print(element.get_char(), end="")
         print()
+
 
 def ask_for_next_action():
     print("input next action:", end="")
@@ -34,12 +36,14 @@ def ask_for_next_action():
         return LoderunnerAction.SUICIDE
     assert False
 
+
 class RewardType:
-    GREEN=("GREEN", 1),
-    YELLOW=("YELLOW", 2),
-    RED=("RED", 3),
-    KILL=("KILL", 10),
-    DIE=("DIE", -1)
+    GREEN = ("GREEN", 1),
+    YELLOW = ("YELLOW", 2),
+    RED = ("RED", 3),
+    KILL = ("KILL", 10),
+    DIE = ("DIE", -1)
+
 
 class Score:
     def __init__(self):
@@ -54,8 +58,8 @@ class Score:
 
     def reward(self, rewardType):
         if (rewardType == RewardType.GREEN or
-            rewardType == RewardType.YELLOW or
-            rewardType == RewardType.RED
+                rewardType == RewardType.YELLOW or
+                rewardType == RewardType.RED
         ):
             self.gold_strick[rewardType[0]] += 1
             self.score += self.gold_strick[rewardType[0]] * rewardType[1]
@@ -63,6 +67,7 @@ class Score:
             self.score += 10
         if rewardType == RewardType.DIE:
             self.__reset_strick__()
+
 
 class Brick:
     TICKS_TILL_FILL = 3
@@ -90,6 +95,7 @@ class Brick:
         self.owner = idx
 
 
+
 class Player:
     TRANSPARENT_INDEX = 0
     TICKS_TILL_SHADOW_EFFECT_ENDS = 5
@@ -105,6 +111,7 @@ class Player:
 
     def update_element(self, element):
         self.element = element
+
 
 class Game:
     def update_player_position(self, old_point, new_point):
@@ -177,7 +184,6 @@ class Game:
                 if element.get_name().startswith("HERO"):
                     return (Point(i, j), element)
 
-
     def apply_actions(self, actions_list):
         """
         Применяет действия из списка к текущей доске (порядок имеет значение!)
@@ -211,6 +217,7 @@ class Game:
         changes_list : list of MapChange
             Список пар: координата точки и объект Element, который теперь будет содержаться в этой точке
         """
+
         def is_valid(map_change):
             if map_change.get_type() == MapChangeType.NONE:
                 return True
@@ -285,8 +292,8 @@ class Game:
                             self.players_table[src[0]].reward(dst_old_el.get_name())
                         if is_enemy(dst_old_el):
                             # TODO: возможна ситуация, когда и игрок и охотник шагают в одну сторону находясь на соседних клетках
-                            x,y = get_random_empty_position(self.mutable_board)
-                            self.update_player_position(src[0], Point(x,y))
+                            x, y = get_random_empty_position(self.mutable_board)
+                            self.update_player_position(src[0], Point(x, y))
                             self.mutable_board[x][y] = Element('HERO_RIGHT')
                             self.players_table[src[0]].reward(RewardType.DIE)
                             continue
@@ -355,10 +362,16 @@ class Game:
             x, y = point.get_x(), point.get_y()
             down_element = self.mutable_board[x + 1][y]
             if down_element.get_name() in _ELEMENTS_CAN_FLIED:
-                #TODO: менять element на HERO_FALL
+                # TODO: суицид в полете приводит к дублированию
                 new_changes_list.append(MapChange([
-                    (Point(x, y), self.static_board[x + 1][y]),
-                    (Point(x + 1, y), element)
+                    (Point(x, y), Element('NONE')),
+                    (Point(x + 1, y), to_falling(element))
+                ]))
+
+            if down_element.get_name() == 'PIPE':
+                new_changes_list.append(MapChange([
+                    (Point(x, y), Element('NONE')),
+                    (Point(x + 1, y), to_pipe(element))
                 ]))
         # TODO: enemy stategy
         return new_changes_list
@@ -382,7 +395,6 @@ class Game:
             for point in users_points
         ]
 
-
     def run(self, ticks=100, render=False):
         """
         Запускает игру
@@ -401,6 +413,7 @@ class Game:
             if render:
                 print_table(self.mutable_board)
                 print("=" * 30)
+
 
 if __name__ == "__main__":
     board = Board.load_from_file("last_board")
