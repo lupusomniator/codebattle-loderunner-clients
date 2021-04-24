@@ -281,19 +281,16 @@ class Game:
                 # new - новый элемент в точке
                 src_old_el, src_new_el = self.mutable_board[src_x][src_y], src[1]
                 dst_old_el, dst_new_el = self.mutable_board[dst_x][dst_y], dst[1]
-                print(src_old_el.get_name(), src_new_el.get_name())
-                print(dst_old_el.get_name(), dst_new_el.get_name())
                 if is_hero(src_old_el):
-                    print("123")
                     if is_hero(src_new_el):
-                        print("1")
                         # герой остался на месте
                         # Эвристика: герой копает
                         # тут что-то надо делать?
                         pass
                     else:
-                        print("2")
                         if is_gold(dst_old_el):
+                            x, y = get_random_empty_position(self.mutable_board)
+                            self.mutable_board[x][y] = Element(dst_old_el.get_name())
                             self.players_table[src[0]].reward(dst_old_el.get_name())
                         if is_enemy(dst_old_el):
                             # TODO: возможна ситуация, когда и игрок и охотник шагают в одну сторону находясь на соседних клетках
