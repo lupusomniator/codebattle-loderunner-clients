@@ -58,8 +58,6 @@ _ELEMENTS = dict(
     PIPE="~",
     PORTAL="⊛",
     THE_SHADOW_PILL="S",
-    OTHER_HERO_FALL_LEFT='⊐',
-    OTHER_HERO_FALL_RIGHT='⊏',
 )
 
 _HERO_ELEMENTS = dict(

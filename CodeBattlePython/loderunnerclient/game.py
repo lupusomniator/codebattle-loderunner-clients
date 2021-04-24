@@ -271,8 +271,9 @@ class Game:
                             else:
                                 owner.reward(RewardType.KILL)
                             rx, ry = get_random_empty_position(self.mutable_board)
+                            print("New hero pos:", rx, ry)
                             self.update_player_position(change[0], Point(rx, ry))
-                            self.mutable_board[x][y] = Element('HERO_RIGHT')
+                            self.mutable_board[rx][ry] = Element('HERO_RIGHT')
                         else:
                             owner.reward(RewardType.KILL)
                 if "PIT" in old_el.get_name() or "PIT" in new_el.get_name():
