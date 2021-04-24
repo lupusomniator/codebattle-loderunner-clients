@@ -19,6 +19,8 @@ class MapChange:
             self.type = MapChangeType.CHANGE
         elif len(changes) == 2:
             self.type = MapChangeType.MOVE_OR_INTERACT
+        else:
+            assert False
         self.changes = changes
 
     def get_changes(self):
@@ -42,7 +44,6 @@ class ElementActionHandler:
 
         if action == action.SUICIDE:
             return ElementActionHandler.suicide_handler(p, table, static_table)
-
 
         elem_under_cur = table[p.get_x() + 1][p.get_y()]
 
@@ -138,6 +139,7 @@ class ElementActionHandler:
             y = random.randrange(0, len(table))
 
         result.append((Point(x, y), Element('HERO_RIGHT')))
+        assert len(result) < 3
         return MapChange(result)
 
     @staticmethod
@@ -145,20 +147,24 @@ class ElementActionHandler:
         result = []
         cur_static_elem = static_table[p.get_x()][p.get_y()]
         new_elem = table[newp.get_x()][newp.get_y()]
-        if new_elem.get_name() == 'LADDER':
-            result.append((p, cur_static_elem))
-            result.append((newp, Element('HERO_LADDER')))
 
         if cur_static_elem.get_name() == 'PIPE':
             result.append((p, cur_static_elem))
-            result.append((newp, Element('HERO_FALL_LEFT')))
+            if new_elem.get_name() == 'LADDER':
+                result.append((newp, Element('HERO_LADDER')))
+            else:
+                result.append((newp, Element('HERO_FALL_LEFT')))
+        else:
+            if new_elem.get_name() == 'LADDER':
+                result.append((p, cur_static_elem))
+                result.append((newp, Element('HERO_LADDER')))
 
         if cur_static_elem.get_name() == 'LADDER' and new_elem.get_name() in _ELEMENTS_CAN_FLIED:
             return MapChange([
                 (p, cur_static_elem),
                 (newp, Element('HERO_FALL_RIGHT'))
             ])
-
+        assert len(result) < 3
         return MapChange(result)
 
     @staticmethod
@@ -209,6 +215,7 @@ class ElementActionHandler:
                 result.append((newp, Element('HERO_' + direction)))
             elif new_elem.get_name() == 'THE_SHADOW_PILL':
                 result.append((newp, Element('HERO_SHADOW_' + direction)))
+        assert len(result) < 3
         return MapChange(result)
 
     @staticmethod
