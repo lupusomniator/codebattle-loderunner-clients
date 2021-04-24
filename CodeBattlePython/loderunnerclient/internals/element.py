@@ -1,16 +1,19 @@
 from loderunnerclient.internals.constants import (_ELEMENTS, _HERO_ELEMENTS,
-                                                 _ACTOR_ELEMENTS, _ELEMENT_TO_INDEX,
-                                                 _INDEX_TO_ELEMENT, _STATIC_ELEMENTS)
+                                                  _ACTOR_ELEMENTS, _ELEMENT_TO_INDEX,
+                                                  _INDEX_TO_ELEMENT, _STATIC_ELEMENTS)
 from typing import Iterable, Union, Optional, Tuple
+
 
 def index_to_char(index):
     return _INDEX_TO_ELEMENT[index]
+
 
 def char_to_index(char):
     if char in _ELEMENT_TO_INDEX:
         return _ELEMENT_TO_INDEX[char]
     else:
         return _ELEMENT_TO_INDEX[" "]
+
 
 def value_of(char):
     """ Test whether the char is valid Element and return it's name."""
@@ -19,6 +22,14 @@ def value_of(char):
             return value
     else:
         raise AttributeError("No such Element: {}".format(char))
+
+
+def char_of(name):
+    for value, c in _ELEMENTS.items():
+        if name == value:
+            return c
+    else:
+        raise AttributeError("No such Element: {}".format(name))
 
 
 class Element:
@@ -45,17 +56,21 @@ class Element:
     def __eq__(self, otherElement):
         return self._name == otherElement._name and self._char == otherElement._char
 
+
 def to_element(value: Union[str, Element]):
     if isinstance(value, str):
         return Element(value)
     else:
         return value
 
+
 def is_actor(value: Union[str, Element]):
     return to_element(value).get_name() in _ACTOR_ELEMENTS
 
+
 def is_hero(value: Union[str, Element]):
     return to_element(value).get_name() in _HERO_ELEMENTS
+
 
 def is_holding_actor(value: Union[str, Element]):
     el = to_element(value)
