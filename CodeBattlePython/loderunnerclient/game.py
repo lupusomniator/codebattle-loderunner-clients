@@ -123,8 +123,18 @@ class Player:
 class Game:
     def update_player_position(self, old_point, new_point):
         print("Update:", old_point, new_point)
-        value = self.players_table[old_point]
-        assert new_point not in self.players_table
+        print(self.players_table)
+        if len(self.players_table) != 6:
+            print("FUCK!")
+            assert False
+        try:
+            value = self.players_table[old_point]
+        except KeyError:
+            return
+
+        # "ЭТО ПРИВЕДЕТ К НЕВЫНОСИМОМУ КОЛЛАПСУ"
+        if new_point in self.players_table:
+            return
         self.players_table.pop(old_point)
         self.players_table[new_point] = value
         self.players_index_to_point[value.id] = new_point
@@ -381,9 +391,10 @@ class Game:
                     (Point(x + 1, y), to_falling(element))
                 ]))
 
-            if down_element.get_name() == 'PIPE':
+            cur_static = self.static_board[x][y]
+            if down_element.get_name() == 'PIPE' and cur_static.get_name() == 'NONE':
                 new_changes_list.append(MapChange([
-                    (Point(x, y), Element('NONE')),
+                    (Point(x, y), cur_static),
                     (Point(x + 1, y), to_pipe(element))
                 ]))
 
@@ -420,7 +431,6 @@ class Game:
             for point in users_points
         ]
 
-
     def run(self, ticks=10000, render=False):
         """
         Запускает игру
@@ -446,6 +456,6 @@ class Game:
 
 if __name__ == "__main__":
     board = Board.load_from_file("last_board")
-    #board.save_to_file("last_board")
+    # board.save_to_file("last_board")
     game = Game(Board.load_from_file("last_board"))
     game.run(render=True)
