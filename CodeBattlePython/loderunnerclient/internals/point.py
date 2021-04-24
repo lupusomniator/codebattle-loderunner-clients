@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class Point:
     """ Describes a point on board."""
 
@@ -33,6 +36,9 @@ class Point:
 
     def to_string(self):
         return "[{},{}]".format(self._x, self._y)
+
+    def coords(self):
+        return np.array([self._x, self._y])
 
 
 if __name__ == "__main__":

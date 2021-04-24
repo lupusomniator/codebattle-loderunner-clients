@@ -264,5 +264,8 @@ class Board:
         with open(file_path, "r") as file:
             return Board("".join(index_to_char(int(x)) for x in file.read().split()))
 
+    def get_size(self):
+        return self._size
+
 if __name__ == "__main__":
     raise RuntimeError("This module is not designed to be ran from CLI")

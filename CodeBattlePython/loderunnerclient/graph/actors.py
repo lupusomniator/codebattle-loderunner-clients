@@ -1,9 +1,9 @@
-from loderunnerclient.internals.constants import *
 from loderunnerclient.internals.element import Element
 from typing import Iterable, Union, Optional, Tuple
 
 
 # Actors
+
 
 class AbstractActor:
     def __init__(self, element: Element):
@@ -106,6 +106,16 @@ class Enemy(AbstractActor):
         self.is_on_ladder = is_on_ladder
         self.is_in_pit = is_in_pit
         self.name = "ENEMY"
+
+
+def is_actor(value: Union[str, Element]):
+    if isinstance(value, str):
+        elem = Element(value)
+    else:
+        elem = value
+    name = elem.get_name()
+    return name in Hero.states or name in OtherHero.states or name in Enemy.states
+
 
 def create_actor(value: Union[str, Element]):
     if isinstance(value, str):

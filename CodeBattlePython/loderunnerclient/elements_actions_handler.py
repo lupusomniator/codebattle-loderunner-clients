@@ -31,8 +31,6 @@ class MapChange:
 class ElementActionHandler:
     @staticmethod
     def apply(p: Point, action: LoderunnerAction, table, static_table, cur_elem=None):
-        if action == LoderunnerAction.FILL_PIT:
-            return MapChange()
         if cur_elem is None:
             cur_elem = static_table[p.get_x()][p.get_y()]
 
@@ -43,14 +41,23 @@ class ElementActionHandler:
         elem_under_cur = table[p.get_x() + 1][p.get_y()]
 
         if action == LoderunnerAction.FILL_PIT:
-            return ElementActionHandler.pit_fill_handler(p, table, static_table)
+            return ElementActionHandler.pit_fill_handler(p, table, static_table, cur_elem)
 
         if cur_elem.get_name() == 'NONE' and elem_under_cur.get_name() in _ELEMENTS_CAN_FLIED:
-            return MapChange([
-                (p, cur_elem),
-                # учитывать направление
-                (Point(p.get_x() + 1, p.get_y()), Element('HERO_FALL_RIGHT'))
-            ])
+            return MapChange()
+            # return MapChange([
+            #     (p, cur_elem),
+            #     # учитывать направление
+            #     (Point(p.get_x() + 1, p.get_y()), Element('HERO_FALL_RIGHT'))
+            # ])
+
+        if cur_elem.get_name() == 'NONE' and elem_under_cur.get_name() == 'PIPE':
+            return MapChange()
+            # return MapChange([
+            #     (p, cur_elem),
+            #     # учитывать направление
+            #     (Point(p.get_x() + 1, p.get_y()), Element('HERO_PIPE_RIGHT'))
+            # ])
 
         if action == action.DO_NOTHING:
             return MapChange()
@@ -82,16 +89,19 @@ class ElementActionHandler:
 
     @staticmethod
     def pit_fill_handler(p: Point, table, static_table, element):
-        print(table[p.get_x()][p.get_y()].get_name())
         if table[p.get_x()][p.get_y()].get_name() == "DRILL_PIT":
-            return MapChange([p, Element(" ")])
+            return MapChange([(p, Element(" "))])
 
         if "PIT" in table[p.get_x()][p.get_y()].get_name():
-            element = Element(str(int(element.get_char()) + 1))
+            state = int(element.get_char())
+            if state < 4:
+                element = Element(str(state + 1))
+            else:
+                element = Element("BRICK")
         else:
             element = Element("PIT_FILL_1")
 
-        return MapChange([p, element])
+        return MapChange([(p, element)])
             
 
     @staticmethod
@@ -100,6 +110,10 @@ class ElementActionHandler:
         target = table[p.get_x() + 1][p.get_y() + sign]
 
         if target.get_name() != 'BRICK':
+            return MapChange()
+
+        element_on_target = table[p.get_x()][p.get_y() + sign]
+        if element_on_target.get_name() != 'NONE':
             return MapChange()
 
         return MapChange([
@@ -118,7 +132,7 @@ class ElementActionHandler:
             y = random.randrange(0, len(table))
 
         result.append((Point(x, y), Element('HERO_RIGHT')))
-        return result
+        return MapChange(result)
 
     @staticmethod
     def go_down_handler(p: Point, newp: Point, table, static_table):
