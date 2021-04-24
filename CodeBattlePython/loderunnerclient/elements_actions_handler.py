@@ -43,18 +43,20 @@ class ElementActionHandler:
         elem_under_cur = table[p.get_x() + 1][p.get_y()]
 
         if cur_elem.get_name() == 'NONE' and elem_under_cur.get_name() in _ELEMENTS_CAN_FLIED:
-            return MapChange([
-                (p, cur_elem),
-                # учитывать направление
-                (Point(p.get_x() + 1, p.get_y()), Element('HERO_FALL_RIGHT'))
-            ])
+            return MapChange()
+            # return MapChange([
+            #     (p, cur_elem),
+            #     # учитывать направление
+            #     (Point(p.get_x() + 1, p.get_y()), Element('HERO_FALL_RIGHT'))
+            # ])
 
         if cur_elem.get_name() == 'NONE' and elem_under_cur.get_name() == 'PIPE':
-            return MapChange([
-                (p, cur_elem),
-                # учитывать направление
-                (Point(p.get_x() + 1, p.get_y()), Element('HERO_PIPE_RIGHT'))
-            ])
+            return MapChange()
+            # return MapChange([
+            #     (p, cur_elem),
+            #     # учитывать направление
+            #     (Point(p.get_x() + 1, p.get_y()), Element('HERO_PIPE_RIGHT'))
+            # ])
 
         if action == action.DO_NOTHING:
             return MapChange()
@@ -90,6 +92,10 @@ class ElementActionHandler:
         target = table[p.get_x() + 1][p.get_y() + sign]
 
         if target.get_name() != 'BRICK':
+            return MapChange()
+
+        element_on_target = table[p.get_x()][p.get_y() + sign]
+        if element_on_target.get_name() != 'NONE':
             return MapChange()
 
         return MapChange([

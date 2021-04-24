@@ -327,7 +327,7 @@ class Game:
             x, y = point.get_x(), point.get_y()
             down_element = self.mutable_board[x + 1][y]
             if down_element.get_name() in _ELEMENTS_CAN_FLIED:
-                # TODO: LoderunnerAction.FALL
+                #TODO: менять element на HERO_FALL
                 new_changes_list.append(MapChange([
                     (Point(x, y), self.static_board[x + 1][y]),
                     (Point(x + 1, y), element)
