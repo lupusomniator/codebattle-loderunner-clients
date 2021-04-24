@@ -54,7 +54,7 @@ class Score:
         self.score = 0
 
     def reward(self, rewardType):
-        if (rewardType == RewardType.GREEN or 
+        if (rewardType == RewardType.GREEN or
             rewardType == RewardType.YELLOW or
             rewardType == RewardType.RED
         ):
@@ -103,7 +103,7 @@ class Player:
     def update_element(self, element):
         self.element = element
 
-class Game:       
+class Game:
     def update_player_position(self, old_point, new_point):
         value = self.players_table[old_point]
         assert new_point not in self.players_table
@@ -114,7 +114,7 @@ class Game:
         assert old_point in self.enemies_positions
         self.enemies_positions[old_point] -= 1
         self.enemies_positions[new_point] += 1
-        
+
     def __init__(self, board):
         self.cur_max_index = 0
 
@@ -148,7 +148,7 @@ class Game:
             for j, element in enumerate(line):
                 if element.get_name().startswith("HERO") or element.get_name().startswith("OTHER_HERO"):
                     heroes.append((Point(i, j), element))
-        return heroes    
+        return heroes
 
     def find_all_holding_actors(self):
         heroes = []
@@ -156,7 +156,7 @@ class Game:
             for j, element in enumerate(line):
                 if is_holding_actor(element):
                     heroes.append((Point(i, j), element))
-        return heroes    
+        return heroes
 
     def find_all_not_holding_actors(self):
         heroes = []
@@ -171,7 +171,7 @@ class Game:
             for j, element in enumerate(line):
                 if element.get_name().startswith("HERO"):
                     return (Point(i, j), element)
-        
+
 
     def apply_actions(self, actions_list):
         """
@@ -216,66 +216,91 @@ class Game:
                 self.mutable_board
             )
 
+        def get_random_empty_position(table):
+            x = random.randrange(0, len(table))
+            y = random.randrange(0, len(table))
+            while (table[x][y].get_name() != 'NONE'):
+                x = random.randrange(0, len(table))
+                y = random.randrange(0, len(table))
+            return x, y
+
         def apply_change(point, element):
             x, y = point.get_x(), point.get_y()
             self.mutable_board[x][y] = element
 
         for change in changes_list:
-            if is_valid(change):
-                if change.get_type() == MapChangeType.NONE:
-                    continue
-                elif change.get_type() == MapChangeType.CHANGE:
-                    # TODO: if is_pit_fill(old_el):
-                    #           kill enemy/player
-                    apply_change(*change.get_changes()[-1])
-                elif change.get_type() == MapChangeType.MOVE_OR_INTERACT:
-                    src, dst = change.get_changes()
-                    src_x, src_y = src[0].get_x(), src[0].get_y()
-                    dst_x, dst_y = dst[0].get_x(), dst[0].get_y()
-                    src_old_el, src_new_el = self.mutable_board[src_x][src_y], src[1]
-                    dst_old_el, dst_new_el = self.mutable_board[dst_x][dst_y], dst[1]
-                    if is_hero(src_old_el):
-                        if is_hero(src_new_el):
-                            # Эвристика: герой копает
-                            # тут что-то надо делать?
-                            pass
-                        else:
-                            assert is_hero(dst_new_el)
-                            if is_gold(dst_old_el):
-                                self.players_table[src[0]].reward(dst_old_el.get_name())
-                            if is_enemy(dst_old_el):
-                                # TODO: переместить игрока в новое место
-                                self.players_table[src[0]].reward(RewardType.DIE)
-                            # TODO: if is_shadow_pill(dst_old_el)
-                            # TODO: if is_portal(dst_old_el)
-                            # TODO: if is_pit_fill(dst_old_el)
-                            self.update_player_position(src[0], dst[0])
+            if not is_valid(change):
+                continue
 
-                    if is_enemy(src_old_el):
-                        assert is_enemy(dst_new_el)
-                        if is_hero(dst_old_el):
-                            # TODO: переместить игрока в новое место
-                            self.players_table[dst[0]].reward(RewardType.DIE)
-                        # TODO: if is_pit_fill(dst_old_el)
-                        # TODO: if is_portal(dst_old_el)
-                        self.update_enemy_position(src[0], dst[0])
-                    
-                    if is_pit_fill(src_old_el):
-                        if is_hero(dst_old_el):
-                            # TODO: переместить игрока в новое место
-                            # TODO: вознаградить автора ямы
-                            self.players_table[dst[0]].reward(RewardType.DIE)
+            if change.get_type() == MapChangeType.NONE:
+                continue
 
+            if change.get_type() == MapChangeType.CHANGE:
+                # TODO: if is_pit_fill(old_el):
+                #           kill enemy/player
+                apply_change(*change.get_changes()[-1])
+
+            elif change.get_type() == MapChangeType.MOVE_OR_INTERACT:
+                src, dst = change.get_changes()
+                src_x, src_y = src[0].get_x(), src[0].get_y()
+                dst_x, dst_y = dst[0].get_x(), dst[0].get_y()
+
+                # src - действие над исходной точкой
+                # dst - действие над точкой в которую совершается перемещение/действие
+                # old - старый элемент в точке
+                # new - новый элемент в точке
+                src_old_el, src_new_el = self.mutable_board[src_x][src_y], src[1]
+                dst_old_el, dst_new_el = self.mutable_board[dst_x][dst_y], dst[1]
+
+                if is_hero(src_old_el):
+                    if is_hero(src_new_el):
+                        # герой остался на месте
+                        # Эвристика: герой копает
+                        # тут что-то надо делать?
+                        pass
+                    else:
+                        if is_gold(dst_old_el):
+                            self.players_table[src[0]].reward(dst_old_el.get_name())
                         if is_enemy(dst_old_el):
-                            # TODO: переместить игрока в новое место
-                            # TODO: вознаградить автора ямы
-                            self.enemies_table[src[0]] -= 1
+                            # TODO: возможна ситуация, когда и игрок и охотник шагают в одну сторону находясь на соседних клетках
+                            x,y = get_random_empty_position(self.mutable_board)
+                            self.update_player_position(src[0], Point(x,y))
+                            self.mutable_board[x][y] = Element('HERO_RIGHT')
+                            self.players_table[src[0]].reward(RewardType.DIE)
+                            continue
+                        # TODO: if is_shadow_pill(dst_old_el)
+                        # TODO: if is_portal(dst_old_el)
+                        # TODO: if is_pit_fill(dst_old_el)
+                        self.update_player_position(src[0], dst[0])
 
-                    # TODO: update tables
-                    src, dst = change.get_changes()
-                    apply_change(*src)
-                    apply_change(*dst)
-    
+                if is_enemy(src_old_el):
+                    assert is_enemy(dst_new_el)
+                    if is_hero(dst_old_el):
+                        x, y = get_random_empty_position(self.mutable_board)
+                        self.update_player_position(src[0], Point(x, y))
+                        self.mutable_board[x][y] = Element('HERO_RIGHT')
+                        self.players_table[dst[0]].reward(RewardType.DIE)
+                        continue
+                    # TODO: if is_pit_fill(dst_old_el)
+                    # TODO: if is_portal(dst_old_el)
+                    self.update_enemy_position(src[0], dst[0])
+
+                if is_pit_fill(src_old_el):
+                    if is_hero(dst_old_el):
+                        # TODO: переместить игрока в новое место
+                        # TODO: вознаградить автора ямы
+                        self.players_table[dst[0]].reward(RewardType.DIE)
+
+                    if is_enemy(dst_old_el):
+                        # TODO: переместить игрока в новое место
+                        # TODO: вознаградить автора ямы
+                        self.enemies_table[src[0]] -= 1
+
+                # TODO: update tables
+                src, dst = change.get_changes()
+                apply_change(*src)
+                apply_change(*dst)
+
     def get_world_actions(self):
         """
         Действия, которые должен совершить мир и на которые пользователи не могут повлиять

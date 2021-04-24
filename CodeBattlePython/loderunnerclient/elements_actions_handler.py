@@ -101,7 +101,7 @@ class ElementActionHandler:
             y = random.randrange(0, len(table))
 
         result.append((Point(x, y), Element('HERO_RIGHT')))
-        return result
+        return MapChange(result)
 
     @staticmethod
     def go_down_handler(p: Point, newp: Point, table, static_table):
