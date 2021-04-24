@@ -2,21 +2,19 @@ from loderunnerclient.internals.actions import LoderunnerAction
 from loderunnerclient.internals.point import Point
 from loderunnerclient.internals.element import Element
 from loderunnerclient.internals.constants import *
+import random
 
 
 class ElementActionHandler:
     @staticmethod
-    def apply(p: Point, action: LoderunnerAction, table, staitc_table):
+    def apply(p: Point, action: LoderunnerAction, table, static_table):
         if action == LoderunnerAction.TICK:
             return []
 
-        cur_elem = staitc_table[p.get_x()][p.get_y()]
+        cur_elem = static_table[p.get_x()][p.get_y()]
 
         if action == action.SUICIDE:
-            return [
-                (p, cur_elem),
-                #     появление в рандомном месте!
-            ]
+            return ElementActionHandler.suicide_handler(p, table, static_table)
 
         elem_under_cur = table[p.get_x() + 1][p.get_y()]
 
@@ -31,26 +29,39 @@ class ElementActionHandler:
             return []
 
         if action == action.GO_RIGHT:
-            return ElementActionHandler.go_right_handler(p, table, staitc_table)
+            return ElementActionHandler.go_right_handler(p, table, static_table)
 
         if action == action.GO_LEFT:
-            return ElementActionHandler.go_left_handler(p, table, staitc_table)
+            return ElementActionHandler.go_left_handler(p, table, static_table)
 
         if action == action.GO_DOWN:
             newp = Point(p.get_x() + 1, p.get_y())
-            return ElementActionHandler.go_down_handler(p, newp, table, staitc_table)
+            return ElementActionHandler.go_down_handler(p, newp, table, static_table)
 
         if action == action.GO_UP:
             newp = Point(p.get_x() - 1, p.get_y())
-            return ElementActionHandler.go_up_handler(p, newp, table, staitc_table)
+            return ElementActionHandler.go_up_handler(p, newp, table, static_table)
 
         if action == action.DRILL_LEFT:
-            return ElementActionHandler.drill_left_handler(p, table, staitc_table)
+            return ElementActionHandler.drill_left_handler(p, table, static_table)
 
         if action == action.DRILL_RIGHT:
-            return ElementActionHandler.drill_right_handler(p, table, staitc_table)
+            return ElementActionHandler.drill_right_handler(p, table, static_table)
 
         return []
+
+    @staticmethod
+    def suicide_handler(p: Point, table, static_table):
+        result = [(p, static_table[p.get_x()][p.get_y()])]
+
+        x = random.randrange(0, len(table))
+        y = random.randrange(0, len(table))
+        while (table[x][y].get_name() != 'NONE'):
+            x = random.randrange(0, len(table))
+            y = random.randrange(0, len(table))
+
+        result.append((Point(x, y), Element('HERO_RIGHT')))
+        return result
 
     @staticmethod
     def drill_left_handler(p: Point, table, static_table):
@@ -96,9 +107,9 @@ class ElementActionHandler:
         return result
 
     @staticmethod
-    def go_up_handler(p: Point, newp: Point, table, staitc_table):
+    def go_up_handler(p: Point, newp: Point, table, static_table):
         result = []
-        cur_static_elem = staitc_table[p.get_x()][p.get_y()]
+        cur_static_elem = static_table[p.get_x()][p.get_y()]
         new_elem = table[newp.get_x()][newp.get_y()]
 
         if cur_static_elem.get_name() == 'LADDER' and new_elem.get_name() == 'LADDER':
@@ -116,9 +127,9 @@ class ElementActionHandler:
         return result
 
     @staticmethod
-    def go_right_handler(p: Point, table, staitc_table):
+    def go_right_handler(p: Point, table, static_table):
         newp = Point(p.get_x(), p.get_y() + 1)
-        cur_elem = staitc_table[p.get_x()][p.get_y()]
+        cur_elem = static_table[p.get_x()][p.get_y()]
         new_elem = table[newp.get_x()][newp.get_y()]
 
         if new_elem.get_char() in '#!☼':
@@ -150,9 +161,9 @@ class ElementActionHandler:
         return result
 
     @staticmethod
-    def go_left_handler(p: Point, table, staitc_table):
+    def go_left_handler(p: Point, table, static_table):
         newp = Point(p.get_x(), p.get_y() - 1)
-        cur_elem = staitc_table[p.get_x()][p.get_y()]
+        cur_elem = static_table[p.get_x()][p.get_y()]
         new_elem = table[newp.get_x()][newp.get_y()]
 
         print(new_elem)
