@@ -5,7 +5,8 @@ import numpy as np
 from loderunnerclient.internals.actions import LoderunnerAction, get_action_by_num
 from loderunnerclient.internals.board import Board
 from loderunnerclient.game_client import GameClient
-from loderunnerclient.internals.element import ElementsCount, index_to_char, char_to_index
+from loderunnerclient.internals.element import index_to_char, char_to_index
+from loderunnerclient.internals.constants import ElementsCount
 
 from rnd import Agent
 
@@ -32,12 +33,12 @@ class Environment:
         ### Параметры нейросети ###
         ## Это можно вынести в аргументы конструктора, но к чему эти выебоны?
 
-        self.window_size         = (25, 15)
+        self.window_size         = (15, 15)
         
         self.n_step_update       = 32 # How many steps before you update the RND. Recommended set to 128 for Discrete
         self.n_eps_update        = 5 # How many episode before you update the PPO. Recommended set to 5 for Discrete
         self.n_init_episode      = 256
-        self.n_saved             = 10 # How many episode to run before saving the weights
+        self.n_saved             = 100 # How many episode to run before saving the weights
         
         self.policy_kl_range     = 0.0008 # Recommended set to 0.0008 for Discrete
         self.policy_params       = 20 # Recommended set to 20 for Discrete
@@ -72,8 +73,8 @@ class Environment:
         self.boards = []
         self.actions = []
         self.agent = Agent(
-            ElementsCount,
-            len(LoderunnerAction),
+            13,
+            len(LoderunnerAction) - 3,
             self.policy_kl_range,
             self.policy_params,
             self.value_clip,
@@ -162,10 +163,10 @@ class Environment:
         y_shift = self.window_size[1] // 2
 
         board = self.boards[-1]
-        table = board.get_index_table((x_shift, y_shift))
+        table = board.get_index_table((y_shift, x_shift))
         my_pos = board.get_my_position()
         x, y = my_pos.get_x(), my_pos.get_y()
-        return table[x : x + self.window_size[0], y : y + self.window_size[1]]
+        return table[y : y + self.window_size[0], x : x + self.window_size[1]]
 
     def __on_turn_start__(self, board):
         """
@@ -196,12 +197,12 @@ class Environment:
         if len(self.boards) > self.memory_size:
             del self.boards[0]
         
-    def __on_turn__(self):
+    def __on_turn__(self, reward):
         # Получаем вознаграждение за совершенное на предыдущем этапе действие
-        reward = self.__get_reward__()
-        print("CALIMED REWARD: ", reward)
+        # reward = self.__get_reward__()
+        # print("CALIMED REWARD: ", reward)
         done = self.__gold_was_taken__()
-        print("DONE:", done)
+        # print("DONE:", done)
 
         # Если мы умерли - то пора учится на своих ошибках
         start_new_episode = (
@@ -213,13 +214,13 @@ class Environment:
 
         # Вычисляем состояние, которое нейронная сможет скушать
         state = self.__get_current_nn_state__()
-        state = to_categorical(state, num_classes=ElementsCount)
+        state = to_categorical(state, num_classes=13)
         # Сейчас в next_state находится чанк размера (1, 53, self.window_size[0], self.window_size[1])
         # 53 - это количество возможных полей в игре
 
         if not self.last_state is None:
             if start_new_episode:
-                print("NEW EPISODE BEGAN!")
+                # print("NEW EPISODE BEGAN!")
                 self.episode_num += 1
                 if self.episode_num % self.n_eps_update == 0:
                     self.agent.update_ppo()
@@ -241,7 +242,7 @@ class Environment:
         self.last_state = state
         return get_action_by_num(int(self.agent.act(state)))
     
-    def on_turn(self, board):
+    def on_turn(self, board, last_reward):
         # user_input = input()
         # if user_input == "w":
         #     return LoderunnerAction.GO_UP
@@ -260,18 +261,13 @@ class Environment:
             self.turn_num += 1
             self.count_undone_turns += 1
             self.__on_turn_start__(board)
-            action = self.__on_turn__()
+            action = self.__on_turn__(last_reward)
             self.__on_turn_end__(action)
             if action == LoderunnerAction.SUICIDE:
                 action = LoderunnerAction.DO_NOTHING
-            if self.count_undone_turns > 100:
-                self.count_undone_turns = 0
-                action = LoderunnerAction.SUICIDE
-            if len(self.actions) > 1 and self.actions[-2] == self.actions[-2] and self.__get_reward__() < -20:
-                if action == LoderunnerAction.GO_LEFT:
-                    action = LoderunnerAction.GO_RIGHT
-                elif action == LoderunnerAction.GO_RIGHT:
-                    action = LoderunnerAction.GO_LEFT
+            # if self.count_undone_turns > 1000:
+            #     self.count_undone_turns = 0
+            #     action = LoderunnerAction.SUICIDE
             return action
         except Exception:
             traceback.print_exc()

@@ -9,14 +9,13 @@ from loderunnerclient.internals.element import (Element, is_actor, is_holding_ac
 from loderunnerclient.elements_actions_handler import ElementActionHandler, MapChangeType, MapChange
 from loderunnerclient.internals.point import Point
 from loderunnerclient.internals.constants import _ELEMENTS_CAN_FLIED
-
+from itertools import chain
 
 def print_table(table):
     for line in table:
         for element in line:
             print(element.get_char(), end="")
-        print()
-
+        print()    
 
 def ask_for_next_action():
     print("input next action:", end="")
@@ -124,7 +123,9 @@ class Game:
     def update_player_position(self, old_point, new_point):
         print("Update:", old_point, new_point)
         value = self.players_table[old_point]
-        assert new_point not in self.players_table
+        if new_point in self.players_table:
+            print(self.players_table)
+            assert False
         self.players_table.pop(old_point)
         self.players_table[new_point] = value
         self.players_index_to_point[value.id] = new_point
@@ -374,14 +375,14 @@ class Game:
         for point, element in not_holding_actors:
             x, y = point.get_x(), point.get_y()
             down_element = self.mutable_board[x + 1][y]
+            cur_static = self.static_board[x][y]
             if down_element.get_name() in _ELEMENTS_CAN_FLIED:
                 # TODO: суицид в полете приводит к дублированию
                 new_changes_list.append(MapChange([
-                    (Point(x, y), Element('NONE')),
+                    (Point(x, y), cur_static),
                     (Point(x + 1, y), to_falling(element))
                 ]))
 
-            cur_static = self.static_board[x][y]
             if down_element.get_name() == 'PIPE' and cur_static.get_name() == 'NONE':
                 new_changes_list.append(MapChange([
                     (Point(x, y), cur_static),
@@ -443,6 +444,12 @@ class Game:
                 print_table(self.mutable_board)
                 print("=" * 30)
 
+    def apply_to_main_hero(self, action):
+        self.do_tick([(self.players_index_to_point[0], action)])
+        return self.players_table[self.players_index_to_point[0]].score.score
+
+    def to_string_board(self):
+        return "".join(el.get_char() for el in chain(*self.mutable_board))
 
 if __name__ == "__main__":
     board = Board.load_from_file("last_board")

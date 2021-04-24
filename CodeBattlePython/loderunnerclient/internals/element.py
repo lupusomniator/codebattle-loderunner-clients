@@ -15,6 +15,13 @@ def char_to_index(char):
         return _ELEMENT_TO_INDEX[char]
     else:
         return _ELEMENT_TO_INDEX[" "]
+    
+def char_to_reduced_index(char):
+    if char in 
+    if char in _ELEMENT_TO_INDEX:
+        return _ELEMENT_TO_INDEX[char]
+    else:
+        return _ELEMENT_TO_INDEX[" "]
 
 
 def value_of(char):

@@ -30,7 +30,7 @@ class Board:
             
         for i, c in enumerate(self._string):
             x, y = self._strpos2xy(i)
-            table[y + indent[0], x + indent[1]] = char_to_index(c)
+            table[y + indent[0], x + indent[1]] = char_to_reduced_index(c)
         return table
 
     def get_elements_board(self, static_only):
