@@ -435,8 +435,8 @@ class Game:
         """
         for i in range(ticks):
             # self.do_tick([(self.find_hero()[0], ask_for_next_action())])
-            # self.do_tick(self.get_random_users_actions())
-            self.do_tick([(self.find_hero()[0], list(LoderunnerAction)[random.randint(0, len(LoderunnerAction) - 3)])])
+            self.do_tick(self.get_random_users_actions())
+            # self.do_tick([(self.find_hero()[0], list(LoderunnerAction)[random.randint(0, len(LoderunnerAction) - 3)])])
             # time.sleep(0.3)
             if render:
                 print_table(self.mutable_board)
@@ -445,5 +445,6 @@ class Game:
 
 if __name__ == "__main__":
     board = Board.load_from_file("last_board")
+    #board.save_to_file("last_board")
     game = Game(Board.load_from_file("last_board"))
     game.run(render=True)
