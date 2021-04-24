@@ -279,6 +279,7 @@ class Game:
                 if "PIT" in old_el.get_name() or "PIT" in new_el.get_name():
                     brick = self.bricks_table[change[0]]
                     brick.element = new_el
+                    self.static_board[x][y] = new_el
                         
                 apply_change(*change)
 
@@ -417,7 +418,7 @@ class Game:
         ]
 
 
-def run(self, ticks=10000, render=False):
+    def run(self, ticks=10000, render=False):
         """
         Запускает игру
         
