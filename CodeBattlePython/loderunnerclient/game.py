@@ -418,7 +418,8 @@ class Game:
             for point in users_points
         ]
 
-    def run(self, ticks=10000, render=False):
+
+def run(self, ticks=10000, render=False):
         """
         Запускает игру
         
