@@ -184,7 +184,7 @@ class ElementActionHandler:
             return MapChange([
                 (p, cur_static_elem),
                 # fall from ladder
-                (newp, table[p.get_x()][p.get_y()].get_name())
+                (newp, table[p.get_x()][p.get_y()])
             ])
 
         if cur_static_elem.get_name() == 'LADDER' and new_elem.get_name() == 'PIPE':
