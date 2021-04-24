@@ -2,7 +2,7 @@ from loderunnerclient.internals.constants import (_ELEMENTS, _HERO_ELEMENTS,
                                                   _ACTOR_ELEMENTS, _ELEMENT_TO_INDEX,
                                                   _INDEX_TO_ELEMENT, _STATIC_ELEMENTS,
                                                   _ENEMY_ELEMENTS, _HEROES_TO_FALL_MAP,
-                                                  _HEROES_TO_PIPE_MAP)
+                                                  _HEROES_TO_PIPE_MAP, _REDUCED_INDEX_MAP)
 from typing import Iterable, Union, Optional, Tuple
 
 
@@ -17,11 +17,10 @@ def char_to_index(char):
         return _ELEMENT_TO_INDEX[" "]
     
 def char_to_reduced_index(char):
-    if char in 
-    if char in _ELEMENT_TO_INDEX:
-        return _ELEMENT_TO_INDEX[char]
+    if char in _REDUCED_INDEX_MAP:
+        return _REDUCED_INDEX_MAP[char]
     else:
-        return _ELEMENT_TO_INDEX[" "]
+        return _REDUCED_INDEX_MAP[" "]
 
 
 def value_of(char):

@@ -29,7 +29,7 @@ def get_initial_layers(state_dim, output_dim=256):
         nn.Conv2d(state_dim, 16, kernel_size=3, stride=1),
         nn.BatchNorm2d(16),
         Flattener(),
-        nn.Linear(4784, output_dim),
+        nn.Linear(2704, output_dim),
         nn.ReLU()
     )
 

@@ -148,6 +148,8 @@ class ElementActionHandler:
             result.append((p, cur_static_elem))
             if new_elem.get_name() == 'LADDER':
                 result.append((newp, Element(prefix + 'LADDER')))
+            elif new_elem.get_name() == 'PIPE':
+                result.append((newp, Element(prefix + 'PIPE_LEFT')))
             else:
                 result.append((newp, Element(prefix + 'FALL_LEFT')))
         else:

@@ -121,11 +121,14 @@ class Player:
 
 class Game:
     def update_player_position(self, old_point, new_point):
-        print("Update:", old_point, new_point)
-        value = self.players_table[old_point]
+        try:
+            value = self.players_table[old_point]
+        except KeyError:
+            return
+
+        # "ЭТО ПРИВЕДЕТ К НЕВЫНОСИМОМУ КОЛЛАПСУ"
         if new_point in self.players_table:
-            print(self.players_table)
-            assert False
+            return
         self.players_table.pop(old_point)
         self.players_table[new_point] = value
         self.players_index_to_point[value.id] = new_point
@@ -262,7 +265,7 @@ class Game:
                 x, y = change[0].get_x(), change[0].get_y()
                 old_el = self.mutable_board[x][y]
                 new_el = change[1]
-                print(change)
+                # print(change)
                 if is_pit_fill(new_el):
                     brick = self.bricks_table[change[0]]
                     if is_hero(old_el) or is_enemy(old_el):
@@ -298,8 +301,8 @@ class Game:
                 # new - новый элемент в точке
                 src_old_el, src_new_el = self.mutable_board[src_x][src_y], src[1]
                 dst_old_el, dst_new_el = self.mutable_board[dst_x][dst_y], dst[1]
-                print("!", src[0], src_old_el, src_new_el)
-                print("#", dst[0], dst_old_el, dst_new_el)
+                # print("!", src[0], src_old_el, src_new_el)
+                # print("#", dst[0], dst_old_el, dst_new_el)
                 if is_hero(dst_new_el):
                     if (src_x - dst_x) ** 2 + (src_y - dst_y) ** 2 > 2:
                         # suicide

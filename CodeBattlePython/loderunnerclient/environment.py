@@ -198,6 +198,8 @@ class Environment:
             del self.boards[0]
         
     def __on_turn__(self, reward):
+        if self.turn_num % 100 == 0:
+            print("\r", self.turn_num, "      ")
         # Получаем вознаграждение за совершенное на предыдущем этапе действие
         # reward = self.__get_reward__()
         # print("CALIMED REWARD: ", reward)

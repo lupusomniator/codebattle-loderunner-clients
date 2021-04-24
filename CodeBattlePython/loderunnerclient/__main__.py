@@ -1,6 +1,8 @@
 import logging
 from loderunnerclient.game_client import GameClient
 from loderunnerclient.environment import Environment
+from loderunnerclient.internals.board import Board
+from loderunnerclient.game import Game
 
 
 
@@ -21,8 +23,9 @@ def local_main():
     env = Environment()
     board = Board.load_from_file("last_board")
     game = Game(board)
+    reward = 0
     while True:
-        action = env.on_turn(game.to_string_board(), reward)
+        action = env.on_turn(Board(game.to_string_board()), reward)
         reward = game.apply_to_main_hero(action)
 
 if __name__ == "__main__":

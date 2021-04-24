@@ -1,6 +1,6 @@
 from math import sqrt
 import numpy as np
-from loderunnerclient.internals.element import Element, value_of, index_to_char, char_to_index, char_of
+from loderunnerclient.internals.element import Element, value_of, index_to_char, char_to_index, char_of, char_to_reduced_index
 from loderunnerclient.internals.point import Point
 from loderunnerclient.internals.constants import _STATIC_ELEMENTS, _HEROES_ON_STATIC_ELEMENTS_MAP
 
