@@ -3,9 +3,9 @@ import time
 from loderunnerclient.internals.actions import LoderunnerAction
 from loderunnerclient.internals.board import Board
 from loderunnerclient.internals.element import is_actor, is_holding_actor
-from loderunnerclient.elements_actions_handler import ElementActionHandler
+from loderunnerclient.elements_actions_handler import ElementActionHandler, MapChangeType, MapChange
 from loderunnerclient.internals.point import Point
-from loderunnerclient.internals.constants import *
+from loderunnerclient.internals.constants import _ELEMENTS_CAN_FLIED
 
 def print_table(table):
     for line in table:
@@ -30,110 +30,124 @@ def ask_for_next_action():
         return LoderunnerAction.DRILL_RIGHT
     assert False
 
+class RewardType:
+    GREEN=("GREEN", 1),
+    YELLOW=("YELLOW", 2),
+    RED=("RED", 3),
+    KILL=("KILL", 10),
+    DIE=("DIE", -1)
+
+class Score:
+    def __init__(self):
+        self.__reset_score__()
+
+    def __reset_score__(self):
+        self.gold_strick = {
+            "GREEN": 0,
+            "YELLOW": 0,
+            "RED": 0
+        }
+        self.score = 0
+
+    def reward(self, rewardType):
+        if (rewardType == RewardType.GREEN or 
+            rewardType == RewardType.YELLOW or
+            rewardType == RewardType.RED
+        ):
+            self.gold_strick[rewardType[0]] += 1
+            self.score += self.gold_strick[rewardType[0]] * rewardType[1]
+        if rewardType == RewardType.KILL:
+            self.score += 10
+        if rewardType == RewardType.DIE:
+            self.__reset_score__()
+
+class Brick:
+    TICKS_TILL_FILL = 3
+
+    def __init__(self, point, element, counter = 0):
+        self.point = point
+        self.element = element
+        self.counter = counter
+
+    def tick(self):
+        self.counter += 1
+        if self.element.get_name() == "PIT_FILL_4":
+            self.element = Element("BRICK")
+
+        if self.element.get_name() == "BRICK":
+            self.counter = 0
+            return False
+
+        return True
+        # MOVE TO EVENTS HANDLER
+        # if self.counter == Brick.TICKS_TILL_FILL:
+        #     self.element = Element("PIT_FILL_1")
+        # elif self.counter > Brick.TICKS_TILL_FILL:
+        #     self.element = Element(str(int(self.element.get_char()) + 1))
+
+        # return MapAction([self.point, self.element])
+
+class Player:
+    TICKS_TILL_SHADOW_EFFECT_ENDS = 5
+
+    def __init__(self, point, element, score=Score()):
+        self.point = point
+        self.element = element
+        self.score = score
+
+    def reward(self, rewardType):
+        self.score(reward(rewardType))
+
+    def update_point(self, new_point):
+        self.point = point
+
+    def update_element(self, element):
+        self.element = element
+
+class Enemy:
+    def __init__(self, point):
+        self.point = point
+
+    def suggest_action(self, board):
+        return LoderunnerAction().DO_NOTHING
+
 class Game:
+    def add_to_table(self, table, value):
+        table[self.cur_max_index] = value
+        self.cur_max_index += 1        
+        
     def __init__(self, board):
-        self.mutable_board = board.get_elements_table(static_only=False)
-        self.static_board = board.get_elements_table(static_only=True)
-        self.brick_positions = board.get_brick_positions()      
-        print_table(self.mutable_board)
+        self.cur_max_index = 0
 
-    def apply_actions(self, actions_list):
-        """
-        Применяет действия из списка к текущей доске (порядок имеет значение!)
+        self.mutable_board = board.get_elements_board(static_only=False)
+        self.static_board = board.get_elements_board(static_only=True)
 
-        Parameters
-        ----------
-        actions_list : list of tuples
-            Список пар: координата точки и действие, которое должен применить объект стоящий в ней
+        self.bricks_table = dict()
+        self.enemies_table = dict()
+        self.players_table = dict()
+        self.indexes_table = dict()
 
-        Returns
-        -------
-        Возвращает список элементов и их координат
-
-        """
-        new_elements_list = []
-        for point, action in actions_list:
-            new_elements_list.extend(ElementActionHandler.apply(
-                point,
-                action,
-                self.mutable_board,
-                self.static_board
-            ))
-        return new_elements_list
-
-    def update_world(self, elements_list):
-        """
-        Изменяет текущее состояние доски в соответствии со списком
-
-        Parameters
-        ----------
-        elements_list : list of tuples
-            Список пар: координата точки и объект Element, который теперь будет содержаться в этой точке
-        """
-        for point, element in elements_list:
-            is_valid = ElementActionHandler.is_valid_replacement(
-                point,
-                element,
-                self.mutable_board
+        brick_positions = set(board.get_brick_positions())
+        for point in brick_positions:
+            self.add_to_table(
+                self.bricks_table,
+                Brick(point, self.static_board[point.get_x()][point.get_y()])
             )
-            if is_valid:
-                x, y = point.get_x(), point.get_y()
-                old_element = self.mutable_board[x][y]
-                self.mutable_board[x][y] = element
-                # TODO: if old_elemet == gold and element == player then increase player gold
-                # and so on
-    
-    def get_world_actions(self):
-        """
-        Действия, которые должен совершить мир и на которые пользователи не могут повлиять
 
-        Returns
-        -------
-        new_elements_list : TYPE
-            DESCRIPTION.
+        enemies_positions = set(board.get_enemy_positions())
+        for point in enemies_positions:
+            self.add_to_table(
+                self.enemies_table, 
+                Enemy(point)
+            )
 
-        """
-        new_elements_list = []
-        # Зарастание ям
-        for point in self.brick_positions:
-            new_elements_list.extend(ElementActionHandler.apply(
-                point,
-                LoderunnerAction.TICK,
-                self.mutable_board,
-                self.static_board
-            ))
-
-        # Падение героев и врагов
-        not_holding_actors = self.find_all_not_holding_actors()
-        for point, element in not_holding_actors:
-            x, y = point.get_x(), point.get_y()
-            down_element = self.mutable_board[x + 1][y]
-            if down_element.get_name() in ELEMENTS_CAN_FLIED:
-                new_elements_list.extend([
-                    (Point(x, y), self.static_board[x + 1][y]),
-                    (Point(x + 1, y), element)
-                ])
-        # TODO: enemy stategy
-        return new_elements_list
-
-    def do_tick(self, users_actions):
-        """
-        Выполняет один тик в соответствии с действиями пользователей и меняет мир
-        """
-        replacement_queue = self.apply_actions(users_actions)
-        replacement_queue.extend(self.get_world_actions())
-        self.update_world(replacement_queue)
-
-    def get_random_users_actions(self):
-        users_points = []
-        for i, line in enumerate(self.mutable_board):
-            for j, element in enumerate(line):
-                if element.get_name().startswith("HERO") or element.get_name().startswith("OTHER_HERO"):
-                    users_points.append(Point(i, j))
-        return [
-            (point, list(LoderunnerAction)[random.randint(0, len(LoderunnerAction) - 3)])
-            for point in users_points
-        ]
+        heroes_positions = {board.get_my_position()}
+        heroes_positions.update(board.get_other_hero_positions())
+        for point in enemies_positions:
+            self.add_to_table(
+                self.players_table, 
+                Player(point, self.mutable_board[point.get_x()][point.get_y()])
+            )
 
     def find_all_heroes(self):
         heroes = []
@@ -165,6 +179,120 @@ class Game:
                 if element.get_name().startswith("HERO"):
                     return (Point(i, j), element)
         
+
+    def apply_actions(self, actions_list):
+        """
+        Применяет действия из списка к текущей доске (порядок имеет значение!)
+
+        Parameters
+        ----------
+        actions_list : list of tuples
+            Список пар: координата точки и действие, которое должен применить объект стоящий в ней
+
+        Returns
+        -------
+        Возвращает список элементов и их координат
+
+        """
+        new_changes_list = []
+        for point, action in actions_list:
+            new_changes_list.append(ElementActionHandler.apply(
+                point,
+                action,
+                self.mutable_board,
+                self.static_board
+            ))
+        return new_changes_list
+
+    def update_world(self, changes_list):
+        """
+        Изменяет текущее состояние доски в соответствии со списком
+
+        Parameters
+        ----------
+        changes_list : list of MapChange
+            Список пар: координата точки и объект Element, который теперь будет содержаться в этой точке
+        """
+        def is_valid(map_change):
+            if map_change.get_type() == MapChangeType.NONE:
+                return True
+            point, element = map_change.get_changes()[-1]
+            return ElementActionHandler.is_valid_replacement(
+                point,
+                element,
+                self.mutable_board
+            )
+
+        def apply_change(point, element):
+            x, y = point.get_x(), point.get_y()
+            self.mutable_board[x][y] = element
+
+        for change in changes_list:
+            if is_valid(change):
+                if change.get_type() == MapChangeType.NONE:
+                    continue
+                elif change.get_type() == MapChangeType.CHANGE:
+                    # TODO: update tables
+                    apply_change(*change.get_changes()[-1])
+                elif change.get_type() == MapChangeType.MOVE:
+                    # TODO: update tables
+                    src, dst = change.get_changes()
+                    apply_change(*src)
+                    apply_change(*dst)
+    
+    def get_world_actions(self):
+        """
+        Действия, которые должен совершить мир и на которые пользователи не могут повлиять
+
+        Returns
+        -------
+        new_changes_list : TYPE
+            DESCRIPTION.
+
+        """
+        new_changes_list = []
+        # Зарастание ям
+        # for point in self.brick_positions:
+        #     new_changes_list.append(ElementActionHandler.apply(
+        #         point,
+        #         LoderunnerAction.TICK,
+        #         self.mutable_board,
+        #         self.static_board
+        #     ))
+
+        # Падение героев и врагов
+        not_holding_actors = self.find_all_not_holding_actors()
+        for point, element in not_holding_actors:
+            x, y = point.get_x(), point.get_y()
+            down_element = self.mutable_board[x + 1][y]
+            if down_element.get_name() in _ELEMENTS_CAN_FLIED:
+                # TODO: LoderunnerAction.FALL
+                new_changes_list.append(MapChange([
+                    (Point(x, y), self.static_board[x + 1][y]),
+                    (Point(x + 1, y), element)
+                ]))
+        # TODO: enemy stategy
+        return new_changes_list
+
+    def do_tick(self, users_actions):
+        """
+        Выполняет один тик в соответствии с действиями пользователей и меняет мир
+        """
+        replacement_queue = self.apply_actions(users_actions)
+        replacement_queue.extend(self.get_world_actions())
+        self.update_world(replacement_queue)
+
+    def get_random_users_actions(self):
+        users_points = []
+        for i, line in enumerate(self.mutable_board):
+            for j, element in enumerate(line):
+                if element.get_name().startswith("HERO") or element.get_name().startswith("OTHER_HERO"):
+                    users_points.append(Point(i, j))
+        return [
+            (point, list(LoderunnerAction)[random.randint(0, len(LoderunnerAction) - 3)])
+            for point in users_points
+        ]
+
 
     def run(self, ticks=100, render=False):
         """

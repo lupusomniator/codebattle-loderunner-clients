@@ -1,4 +1,6 @@
-from loderunnerclient.internals.constants import _ELEMENTS, _ACTOR_ELEMENTS, _ELEMENT_TO_INDEX, _INDEX_TO_ELEMENT, _STATIC_ELEMENTS
+from loderunnerclient.internals.constants import (_ELEMENTS, _HERO_ELEMENTS,
+                                                 _ACTOR_ELEMENTS, _ELEMENT_TO_INDEX,
+                                                 _INDEX_TO_ELEMENT, _STATIC_ELEMENTS)
 from typing import Iterable, Union, Optional, Tuple
 
 def index_to_char(index):
@@ -51,6 +53,9 @@ def to_element(value: Union[str, Element]):
 
 def is_actor(value: Union[str, Element]):
     return to_element(value).get_name() in _ACTOR_ELEMENTS
+
+def is_hero(value: Union[str, Element]):
+    return to_element(value).get_name() in _HERO_ELEMENTS
 
 def is_holding_actor(value: Union[str, Element]):
     el = to_element(value)
