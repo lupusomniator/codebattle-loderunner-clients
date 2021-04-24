@@ -243,7 +243,7 @@ class Game:
 
         def apply_change(point, element):
             main_hero_point = self.players_index_to_point[0]
-            print("score: ", str(self.players_table[main_hero_point].score.score))
+            # print("score: ", str(self.players_table[main_hero_point].score.score))
             x, y = point.get_x(), point.get_y()
             self.mutable_board[x][y] = element
 
