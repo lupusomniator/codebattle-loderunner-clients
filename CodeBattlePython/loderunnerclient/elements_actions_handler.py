@@ -49,6 +49,13 @@ class ElementActionHandler:
                 (Point(p.get_x() + 1, p.get_y()), Element('HERO_FALL_RIGHT'))
             ])
 
+        if cur_elem.get_name() == 'NONE' and elem_under_cur.get_name() == 'PIPE':
+            return MapChange([
+                (p, cur_elem),
+                # учитывать направление
+                (Point(p.get_x() + 1, p.get_y()), Element('HERO_PIPE_RIGHT'))
+            ])
+
         if action == action.DO_NOTHING:
             return MapChange()
 
