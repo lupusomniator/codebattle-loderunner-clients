@@ -381,9 +381,10 @@ class Game:
                     (Point(x + 1, y), to_falling(element))
                 ]))
 
-            if down_element.get_name() == 'PIPE':
+            cur_static = self.static_board[x][y]
+            if down_element.get_name() == 'PIPE' and cur_static.get_name() == 'NONE':
                 new_changes_list.append(MapChange([
-                    (Point(x, y), Element('NONE')),
+                    (Point(x, y), cur_static),
                     (Point(x + 1, y), to_pipe(element))
                 ]))
 
@@ -420,7 +421,6 @@ class Game:
             for point in users_points
         ]
 
-
     def run(self, ticks=10000, render=False):
         """
         Запускает игру
@@ -446,6 +446,6 @@ class Game:
 
 if __name__ == "__main__":
     board = Board.load_from_file("last_board")
-    #board.save_to_file("last_board")
+    # board.save_to_file("last_board")
     game = Game(Board.load_from_file("last_board"))
     game.run(render=True)
