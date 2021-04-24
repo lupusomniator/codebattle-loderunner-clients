@@ -21,6 +21,8 @@ class MapChange:
             self.type = MapChangeType.CHANGE
         elif len(changes) == 2:
             self.type = MapChangeType.MOVE_OR_INTERACT
+        else:
+            assert False
         self.changes = changes
 
     def get_changes(self):
@@ -139,6 +141,7 @@ class ElementActionHandler:
             y = random.randrange(0, len(table))
 
         result.append((Point(x, y), table[p.get_x()][p.get_y()]))
+        assert len(result) < 3
         return MapChange(result)
 
     @staticmethod
@@ -146,20 +149,24 @@ class ElementActionHandler:
         result = []
         cur_static_elem = static_table[p.get_x()][p.get_y()]
         new_elem = table[newp.get_x()][newp.get_y()]
-        if new_elem.get_name() == 'LADDER':
-            result.append((p, cur_static_elem))
-            result.append((newp, to_ladder(table[p.get_x()][p.get_y()].get_name())))
 
         if cur_static_elem.get_name() == 'PIPE':
             result.append((p, cur_static_elem))
-            result.append((newp, to_falling(table[p.get_x()][p.get_y()].get_name())))
+            if new_elem.get_name() == 'LADDER':
+                result.append((newp, Element('HERO_LADDER')))
+            else:
+                result.append((newp, Element('HERO_FALL_LEFT')))
+        else:
+            if new_elem.get_name() == 'LADDER':
+                result.append((p, cur_static_elem))
+                result.append((newp, to_ladder(table[p.get_x()][p.get_y()].get_name())))
 
         if cur_static_elem.get_name() == 'LADDER' and new_elem.get_name() in _ELEMENTS_CAN_FLIED:
             return MapChange([
                 (p, cur_static_elem),
                 (newp, to_falling(table[p.get_x()][p.get_y()].get_name()))
             ])
-
+        assert len(result) < 3
         return MapChange(result)
 
     @staticmethod
@@ -212,6 +219,7 @@ class ElementActionHandler:
                 result.append((newp, Element(prefix + direction)))
             elif new_elem.get_name() == 'THE_SHADOW_PILL':
                 result.append((newp, Element(prefix + 'SHADOW_' + direction)))
+        assert len(result) < 3
         return MapChange(result)
 
     @staticmethod
