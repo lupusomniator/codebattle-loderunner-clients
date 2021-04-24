@@ -3,6 +3,7 @@ from loderunnerclient.internals.point import Point
 from loderunnerclient.internals.element import Element
 from loderunnerclient.internals.constants import _ELEMENTS_CAN_FLIED
 from enum import Enum
+import random
 
 class MapChangeType(Enum):
     NONE = 0,
@@ -25,7 +26,7 @@ class MapChange:
 
     def get_type(self):
         return self.type
-            
+
 
 class ElementActionHandler:
     @staticmethod
@@ -36,10 +37,8 @@ class ElementActionHandler:
         cur_elem = static_table[p.get_x()][p.get_y()]
 
         if action == action.SUICIDE:
-            return MapChange([
-                (p, cur_elem),
-                #     появление в рандомном месте!
-            ])
+            return ElementActionHandler.suicide_handler(p, table, static_table)
+
 
         elem_under_cur = table[p.get_x() + 1][p.get_y()]
 
@@ -82,6 +81,7 @@ class ElementActionHandler:
     def drill_handler(p: Point, table, static_table, direction):
         sign = 1 if direction == "RIGHT" else -1
         target = table[p.get_x() + 1][p.get_y() + sign]
+
         if target.get_name() != 'BRICK':
             return MapChange()
 
@@ -89,6 +89,19 @@ class ElementActionHandler:
             (p, Element('HERO_DRILL_' + direction)),
             (Point(p.get_x() + 1, p.get_y() + sign), Element('DRILL_PIT'))
         ])
+
+    @staticmethod
+    def suicide_handler(p: Point, table, static_table):
+        result = [(p, static_table[p.get_x()][p.get_y()])]
+
+        x = random.randrange(0, len(table))
+        y = random.randrange(0, len(table))
+        while (table[x][y].get_name() != 'NONE'):
+            x = random.randrange(0, len(table))
+            y = random.randrange(0, len(table))
+
+        result.append((Point(x, y), Element('HERO_RIGHT')))
+        return result
 
     @staticmethod
     def go_down_handler(p: Point, newp: Point, table, static_table):

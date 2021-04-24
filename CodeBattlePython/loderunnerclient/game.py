@@ -28,6 +28,8 @@ def ask_for_next_action():
         return LoderunnerAction.DRILL_LEFT
     if user_input == "e":
         return LoderunnerAction.DRILL_RIGHT
+    if user_input == "z":
+        return LoderunnerAction.SUICIDE
     assert False
 
 class RewardType:
