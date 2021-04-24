@@ -58,6 +58,12 @@ class Element:
     def __eq__(self, otherElement):
         return self._name == otherElement._name and self._char == otherElement._char
 
+    def __str__(self):
+        return self.get_name()
+
+    def __repr__(self):
+        return self.get_name()
+
 
 def to_element(value: Union[str, Element]):
     if isinstance(value, str):

@@ -27,6 +27,12 @@ class MapChange:
     def get_type(self):
         return self.type
 
+    def __str__(self):
+        return str(self.changes)
+
+    def __repr__(self):
+        return str(self.changes)
+
 
 class ElementActionHandler:
     @staticmethod

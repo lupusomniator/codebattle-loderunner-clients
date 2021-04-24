@@ -95,7 +95,6 @@ class Brick:
         self.owner = idx
 
 
-
 class Player:
     TRANSPARENT_INDEX = 0
     TICKS_TILL_SHADOW_EFFECT_ENDS = 5
@@ -252,6 +251,7 @@ class Game:
                 x, y = change[0].get_x(), change[0].get_y()
                 old_el = self.mutable_board[x][y]
                 new_el = change[1]
+                print("!", old_el.get_name(), new_el.get_name())
                 if is_pit_fill(new_el):
                     brick = self.bricks_table[change[0]]
                     if is_hero(old_el) or is_enemy(old_el):
@@ -281,13 +281,18 @@ class Game:
                 # new - новый элемент в точке
                 src_old_el, src_new_el = self.mutable_board[src_x][src_y], src[1]
                 dst_old_el, dst_new_el = self.mutable_board[dst_x][dst_y], dst[1]
+                print(src_old_el.get_name(), src_new_el.get_name())
+                print(dst_old_el.get_name(), dst_new_el.get_name())
                 if is_hero(src_old_el):
+                    print("123")
                     if is_hero(src_new_el):
+                        print("1")
                         # герой остался на месте
                         # Эвристика: герой копает
                         # тут что-то надо делать?
                         pass
                     else:
+                        print("2")
                         if is_gold(dst_old_el):
                             self.players_table[src[0]].reward(dst_old_el.get_name())
                         if is_enemy(dst_old_el):
@@ -303,6 +308,7 @@ class Game:
                         self.update_player_position(src[0], dst[0])
 
                 if is_enemy(src_old_el):
+                    print("5")
                     assert is_enemy(dst_new_el)
                     if is_hero(dst_old_el):
                         x, y = get_random_empty_position(self.mutable_board)
@@ -315,6 +321,7 @@ class Game:
                     self.update_enemy_position(src[0], dst[0])
 
                 if is_pit_fill(src_old_el):
+                    print("3")
                     if is_hero(dst_old_el):
                         # TODO: переместить игрока в новое место
                         # TODO: вознаградить автора ямы
@@ -326,6 +333,7 @@ class Game:
                         self.enemies_table[src[0]] -= 1
 
                 if dst_new_el.get_name() == "DRILL_PIT":
+                    print("4")
                     self.bricks_table[dst[0]].destroy(self.players_table[src[0]].id)
 
                 # TODO: update tables
@@ -344,17 +352,6 @@ class Game:
 
         """
         new_changes_list = []
-        # Зарастание ям
-
-        for point, brick in self.bricks_table.items():
-            if brick.tick():
-                new_changes_list.append(ElementActionHandler.apply(
-                    point,
-                    LoderunnerAction.FILL_PIT,
-                    self.mutable_board,
-                    self.static_board,
-                    brick.element
-                ))
 
         # Падение героев и врагов
         not_holding_actors = self.find_all_not_holding_actors()
@@ -373,7 +370,20 @@ class Game:
                     (Point(x, y), Element('NONE')),
                     (Point(x + 1, y), to_pipe(element))
                 ]))
+
+        # Зарастание ям
+        for point, brick in self.bricks_table.items():
+            if brick.tick():
+                new_changes_list.append(ElementActionHandler.apply(
+                    point,
+                    LoderunnerAction.FILL_PIT,
+                    self.mutable_board,
+                    self.static_board,
+                    brick.element
+                ))
+
         # TODO: enemy stategy
+        print("world actions:",new_changes_list)
         return new_changes_list
 
     def do_tick(self, users_actions):
@@ -395,7 +405,7 @@ class Game:
             for point in users_points
         ]
 
-    def run(self, ticks=100, render=False):
+    def run(self, ticks=10000, render=False):
         """
         Запускает игру
         
@@ -410,6 +420,8 @@ class Game:
         """
         for i in range(ticks):
             self.do_tick([(self.find_hero()[0], ask_for_next_action())])
+            #self.do_tick(self.get_random_users_actions())
+            #time.sleep(0.3)
             if render:
                 print_table(self.mutable_board)
                 print("=" * 30)
