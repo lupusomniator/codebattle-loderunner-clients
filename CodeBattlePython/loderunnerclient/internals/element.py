@@ -1,6 +1,7 @@
 from loderunnerclient.internals.constants import (_ELEMENTS, _HERO_ELEMENTS,
                                                   _ACTOR_ELEMENTS, _ELEMENT_TO_INDEX,
-                                                  _INDEX_TO_ELEMENT, _STATIC_ELEMENTS)
+                                                  _INDEX_TO_ELEMENT, _STATIC_ELEMENTS,
+                                                  _ENEMY_ELEMENTS)
 from typing import Iterable, Union, Optional, Tuple
 
 
@@ -76,6 +77,16 @@ def is_holding_actor(value: Union[str, Element]):
     el = to_element(value)
     name = el.get_name()
     return is_actor(el) and ("PIPE" in name or "LADDER" in name)
+
+def is_gold(value: Union[str, Element]):
+    el = to_element(value)
+    return "GOLD" in el.get_name()
+
+def is_enemy(value: Union[str, Element]):
+    return to_element(value).get_name() in _ENEMY_ELEMENTS
+
+def is_pit_fill(value: Union[str, Element]):
+    return "PIT_FILL" in to_element(value).get_name()
 
 
 if __name__ == "__main__":

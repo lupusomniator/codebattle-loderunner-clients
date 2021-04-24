@@ -3,7 +3,8 @@ import time
 from collections import defaultdict
 from loderunnerclient.internals.actions import LoderunnerAction
 from loderunnerclient.internals.board import Board
-from loderunnerclient.internals.element import Element, is_actor, is_holding_actor
+from loderunnerclient.internals.element import (Element, is_actor, is_holding_actor,
+                                                is_hero, is_enemy, is_gold, is_pit_fill)
 from loderunnerclient.elements_actions_handler import ElementActionHandler, MapChangeType, MapChange
 from loderunnerclient.internals.point import Point
 from loderunnerclient.internals.constants import _ELEMENTS_CAN_FLIED
@@ -102,11 +103,7 @@ class Player:
     def update_element(self, element):
         self.element = element
 
-class Game:
-    def add_to_table(self, table, point, value):
-        table[self.cur_max_index] = value
-        self.cur_max_index += 1        
-        
+class Game:       
     def update_player_position(self, old_point, new_point):
         value = self.players_table[old_point]
         assert new_point not in self.players_table
@@ -131,28 +128,19 @@ class Game:
 
         brick_positions = set(board.get_brick_positions())
         for point in brick_positions:
-            self.add_to_table(
-                self.bricks_table,
-                point,
-                Brick(self.static_board[point.get_x()][point.get_y()])
-            )
+            rev_point = Point(point.get_y(), point.get_x())
+            self.bricks_table[rev_point] = Brick(self.static_board[rev_point.get_x()][rev_point.get_y()])
 
         enemies_positions = set(board.get_enemy_positions())
         for point in enemies_positions:
-            self.add_to_table(
-                self.enemies_table, 
-                point,
-                self.enemies_table[point] + 1
-            )
+            rev_point = Point(point.get_y(), point.get_x())
+            self.enemies_table[rev_point] = self.enemies_table[rev_point] + 1
 
         heroes_positions = {board.get_my_position()}
         heroes_positions.update(board.get_other_hero_positions())
-        for point in enemies_positions:
-            self.add_to_table(
-                self.players_table, 
-                point,
-                Player(self.mutable_board[point.get_x()][point.get_y()])
-            )
+        for point in heroes_positions:
+            rev_point = Point(point.get_y(), point.get_x())
+            self.players_table[rev_point] = Player(self.mutable_board[rev_point.get_y()][rev_point.get_x()])
 
     def find_all_heroes(self):
         heroes = []
@@ -237,9 +225,52 @@ class Game:
                 if change.get_type() == MapChangeType.NONE:
                     continue
                 elif change.get_type() == MapChangeType.CHANGE:
-                    # TODO: update tables
+                    # TODO: if is_pit_fill(old_el):
+                    #           kill enemy/player
                     apply_change(*change.get_changes()[-1])
-                elif change.get_type() == MapChangeType.MOVE:
+                elif change.get_type() == MapChangeType.MOVE_OR_INTERACT:
+                    src, dst = change.get_changes()
+                    src_x, src_y = src[0].get_x(), src[0].get_y()
+                    dst_x, dst_y = dst[0].get_x(), dst[0].get_y()
+                    src_old_el, src_new_el = self.mutable_board[src_x][src_y], src[1]
+                    dst_old_el, dst_new_el = self.mutable_board[dst_x][dst_y], dst[1]
+                    if is_hero(src_old_el):
+                        if is_hero(src_new_el):
+                            # Эвристика: герой копает
+                            # тут что-то надо делать?
+                            pass
+                        else:
+                            assert is_hero(dst_new_el)
+                            if is_gold(dst_old_el):
+                                self.players_table[src[0]].reward(dst_old_el.get_name())
+                            if is_enemy(dst_old_el):
+                                # TODO: переместить игрока в новое место
+                                self.players_table[src[0]].reward(RewardType.DIE)
+                            # TODO: if is_shadow_pill(dst_old_el)
+                            # TODO: if is_portal(dst_old_el)
+                            # TODO: if is_pit_fill(dst_old_el)
+                            self.update_player_position(src[0], dst[0])
+
+                    if is_enemy(src_old_el):
+                        assert is_enemy(dst_new_el)
+                        if is_hero(dst_old_el):
+                            # TODO: переместить игрока в новое место
+                            self.players_table[dst[0]].reward(RewardType.DIE)
+                        # TODO: if is_pit_fill(dst_old_el)
+                        # TODO: if is_portal(dst_old_el)
+                        self.update_enemy_position(src[0], dst[0])
+                    
+                    if is_pit_fill(src_old_el):
+                        if is_hero(dst_old_el):
+                            # TODO: переместить игрока в новое место
+                            # TODO: вознаградить автора ямы
+                            self.players_table[dst[0]].reward(RewardType.DIE)
+
+                        if is_enemy(dst_old_el):
+                            # TODO: переместить игрока в новое место
+                            # TODO: вознаградить автора ямы
+                            self.enemies_table[src[0]] -= 1
+
                     # TODO: update tables
                     src, dst = change.get_changes()
                     apply_change(*src)

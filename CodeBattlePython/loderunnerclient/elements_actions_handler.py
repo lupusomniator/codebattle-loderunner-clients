@@ -8,7 +8,7 @@ import random
 class MapChangeType(Enum):
     NONE = 0,
     CHANGE = 1,
-    MOVE = 2
+    MOVE_OR_INTERACT = 2
 
 class MapChange:
     def __init__(self, changes=None):
@@ -18,7 +18,7 @@ class MapChange:
         elif len(changes) == 1:
             self.type = MapChangeType.CHANGE
         elif len(changes) == 2:
-            self.type = MapChangeType.MOVE
+            self.type = MapChangeType.MOVE_OR_INTERACT
         self.changes = changes
 
     def get_changes(self):
