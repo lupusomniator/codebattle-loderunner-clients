@@ -4,7 +4,8 @@ from collections import defaultdict
 from loderunnerclient.internals.actions import LoderunnerAction
 from loderunnerclient.internals.board import Board
 from loderunnerclient.internals.element import (Element, is_actor, is_holding_actor,
-                                                is_hero, is_enemy, is_gold, is_pit_fill, to_falling, to_pipe)
+                                                is_hero, is_enemy, is_gold, is_pit_fill, to_falling, to_pipe,
+                                                to_element)
 from loderunnerclient.elements_actions_handler import ElementActionHandler, MapChangeType, MapChange
 from loderunnerclient.internals.point import Point
 from loderunnerclient.internals.constants import _ELEMENTS_CAN_FLIED
@@ -45,6 +46,7 @@ class RewardType:
     DIE = ("DIE", -1),
     SUICIDE = ("SUICIDE", -10),
     DUMMY = ("DUMMY", 0)
+
 
 class Score:
     def __init__(self):
@@ -280,7 +282,7 @@ class Game:
                     brick = self.bricks_table[change[0]]
                     brick.element = new_el
                     self.static_board[x][y] = new_el
-                        
+
                 apply_change(*change)
 
             elif change.get_type() == MapChangeType.MOVE_OR_INTERACT:
@@ -298,7 +300,7 @@ class Game:
                 print("#", dst[0], dst_old_el, dst_new_el)
                 if is_hero(dst_new_el):
                     if (src_x - dst_x) ** 2 + (src_y - dst_y) ** 2 > 2:
-                        #suicide
+                        # suicide
                         self.players_table[src[0]].reward(RewardType.SUICIDE)
                 if is_hero(src_old_el):
                     if is_hero(src_new_el):
@@ -346,7 +348,7 @@ class Game:
                         # TODO: вознаградить автора ямы
                         self.enemies_table[src[0]] -= 1
 
-                if dst_new_el.get_name() == "DRILL_PIT":
+                if to_element(dst_new_el).get_name() == "DRILL_PIT":
                     self.bricks_table[dst[0]].destroy(self.players_table[src[0]].id)
 
                 # TODO: update tables
@@ -435,7 +437,7 @@ class Game:
             # self.do_tick([(self.find_hero()[0], ask_for_next_action())])
             # self.do_tick(self.get_random_users_actions())
             self.do_tick([(self.find_hero()[0], list(LoderunnerAction)[random.randint(0, len(LoderunnerAction) - 3)])])
-            #time.sleep(0.3)
+            # time.sleep(0.3)
             if render:
                 print_table(self.mutable_board)
                 print("=" * 30)
