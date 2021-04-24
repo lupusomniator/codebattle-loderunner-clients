@@ -107,6 +107,8 @@ class Board:
         points.update(self._find_all(Element("OTHER_HERO_LADDER")))
         points.update(self._find_all(Element("OTHER_HERO_LEFT")))
         points.update(self._find_all(Element("OTHER_HERO_RIGHT")))
+        points.update(self._find_all(Element("OTHER_HERO_DRILL_LEFT")))
+        points.update(self._find_all(Element("OTHER_HERO_DRILL_RIGHT")))
         points.update(self._find_all(Element("OTHER_HERO_PIPE_LEFT")))
         points.update(self._find_all(Element("OTHER_HERO_PIPE_RIGHT")))
         points.update(self._find_all(Element("OTHER_HERO_SHADOW_LEFT")))
