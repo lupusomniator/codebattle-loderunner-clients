@@ -1,6 +1,6 @@
 from loderunnerclient.internals.actions import LoderunnerAction
 from loderunnerclient.internals.point import Point
-from loderunnerclient.internals.element import Element
+from loderunnerclient.internals.element import Element, is_actor
 from loderunnerclient.internals.constants import _ELEMENTS_CAN_FLIED
 from enum import Enum
 import random
@@ -213,4 +213,8 @@ class ElementActionHandler:
 
     @staticmethod
     def is_valid_replacement(point, element, table):
+        old_element = table[point.get_x()][point.get_y()]
+        if is_actor(element):
+            if is_actor(old_element):
+                return False
         return True
