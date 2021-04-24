@@ -61,6 +61,7 @@ _ELEMENTS = dict(
     UNDESTROYABLE_WALL="☼",
     LADDER="H",
     PIPE="~",
+    OUT_OF_TABLE="!"
 )
 
 _HERO_ELEMENTS = dict(
@@ -268,6 +269,7 @@ _REDUCED_INDEX_MAP = {
     "☼": 10,
     "H": 11,
     "~": 12,
+    "!": 13
 }
 
 for i, el in enumerate(sorted(_ELEMENTS.values())):
