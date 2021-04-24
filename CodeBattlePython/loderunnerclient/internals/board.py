@@ -116,8 +116,10 @@ class Board:
         points.update(self._find_all(Element("OTHER_HERO_SHADOW_LADDER")))
         points.update(self._find_all(Element("OTHER_HERO_SHADOW_PIPE_LEFT")))
         points.update(self._find_all(Element("OTHER_HERO_SHADOW_PIPE_RIGHT")))
-        points.update(self._find_all(Element("OTHER_HERO_DRILL_RIGHT")))
-        points.update(self._find_all(Element("OTHER_HERO_DRILL_LEFT")))
+        points.update(self._find_all(Element("OTHER_HERO_FALL_LEFT")))
+        points.update(self._find_all(Element("OTHER_HERO_FALL_RIGHT")))
+        points.update(self._find_all(Element("OTHER_HERO_SHADOW_FALL_LEFT")))
+        points.update(self._find_all(Element("OTHER_HERO_SHADOW_FALL_RIGHT")))
         return list(points)
 
     def get_shadow_pills(self):
@@ -147,6 +149,8 @@ class Board:
         points.update(self._find_all(Element("OTHER_HERO_SHADOW_LADDER")))
         points.update(self._find_all(Element("OTHER_HERO_SHADOW_PIPE_LEFT")))
         points.update(self._find_all(Element("OTHER_HERO_SHADOW_PIPE_RIGHT")))
+        points.update(self._find_all(Element("OTHER_HERO_SHADOW_FALL_LEFT")))
+        points.update(self._find_all(Element("OTHER_HERO_SHADOW_FALL_RIGHT")))
         return list(points)
 
     def get_wall_positions(self):
