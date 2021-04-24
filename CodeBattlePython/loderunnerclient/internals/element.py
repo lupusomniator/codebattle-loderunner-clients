@@ -102,6 +102,17 @@ def to_falling(value: Union[str, Element]):
 
     return el
 
+def to_ladder(value: Union[str, Element]):
+    el = to_element(value)
+    if 'OTHER_HERO' in el.get_name():
+        return Element('OTHER_HERO_LADDER')
+
+    if 'HERO' in el.get_name():
+        return Element('HERO_LADDER')
+
+    if 'ENEMY' in el.get_name():
+        return Element('ENEMY_LADDER')
+
 def to_pipe(value: Union[str, Element]):
     el = to_element(value)
     if el.get_name() in _HEROES_TO_PIPE_MAP:
