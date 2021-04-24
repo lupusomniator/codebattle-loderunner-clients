@@ -110,6 +110,9 @@ class ElementActionHandler:
         if target.get_name() != 'BRICK':
             return MapChange()
 
+        if static_table[p.get_x()][p.get_y()].get_name() == 'PIPE':
+            return MapChange()
+
         element_on_target = table[p.get_x()][p.get_y() + sign]
         if element_on_target.get_name() != 'NONE':
             return MapChange()

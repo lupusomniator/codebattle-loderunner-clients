@@ -122,6 +122,7 @@ class Player:
 
 class Game:
     def update_player_position(self, old_point, new_point):
+        print("Update:", old_point, new_point)
         value = self.players_table[old_point]
         assert new_point not in self.players_table
         self.players_table.pop(old_point)
