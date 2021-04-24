@@ -42,12 +42,14 @@ class RewardType:
     YELLOW = ("YELLOW", 2),
     RED = ("RED", 3),
     KILL = ("KILL", 10),
-    DIE = ("DIE", -1)
+    DIE = ("DIE", -1),
+    SUICIDE = ("DIE", -10)
 
 
 class Score:
     def __init__(self):
         self.__reset_strick__()
+        self.score = 0
 
     def __reset_strick__(self):
         self.gold_strick = {
@@ -64,9 +66,13 @@ class Score:
             self.gold_strick[rewardType[0]] += 1
             self.score += self.gold_strick[rewardType[0]] * rewardType[1]
         if rewardType == RewardType.KILL:
-            self.score += 10
+            self.score += rewardType[1]
         if rewardType == RewardType.DIE:
             self.__reset_strick__()
+            self.score += rewardType[1]
+        if rewardType == RewardType.SUICIDE:
+            self.__reset_strick__()
+            self.score += rewardType[1]
 
 
 class Brick:
@@ -251,7 +257,7 @@ class Game:
                 x, y = change[0].get_x(), change[0].get_y()
                 old_el = self.mutable_board[x][y]
                 new_el = change[1]
-                print("!", old_el.get_name(), new_el.get_name())
+ 
                 if is_pit_fill(new_el):
                     brick = self.bricks_table[change[0]]
                     if is_hero(old_el) or is_enemy(old_el):
@@ -260,7 +266,7 @@ class Game:
                         if is_hero(old_el):
                             died_player = self.players_table[change[0]]
                             if died_player.id == owner.id:
-                                owner.reward(RewardType.DIE)
+                                owner.reward(RewardType.SUICIDE)
                             else:
                                 owner.reward(RewardType.KILL)
                         else:
@@ -281,6 +287,10 @@ class Game:
                 # new - новый элемент в точке
                 src_old_el, src_new_el = self.mutable_board[src_x][src_y], src[1]
                 dst_old_el, dst_new_el = self.mutable_board[dst_x][dst_y], dst[1]
+                if is_hero(dst_new_el):
+                    if (src_x - dst_x) ** 2 + (src_y - dst_y) ** 2 > 2:
+                        #suicide
+                        self.players_table[src[0]].reward(RewardType.SUICIDE)
                 if is_hero(src_old_el):
                     if is_hero(src_new_el):
                         # герой остался на месте
@@ -305,7 +315,6 @@ class Game:
                         self.update_player_position(src[0], dst[0])
 
                 if is_enemy(src_old_el):
-                    print("5")
                     assert is_enemy(dst_new_el)
                     if is_hero(dst_old_el):
                         x, y = get_random_empty_position(self.mutable_board)
@@ -318,7 +327,6 @@ class Game:
                     self.update_enemy_position(src[0], dst[0])
 
                 if is_pit_fill(src_old_el):
-                    print("3")
                     if is_hero(dst_old_el):
                         # TODO: переместить игрока в новое место
                         # TODO: вознаградить автора ямы
@@ -330,7 +338,6 @@ class Game:
                         self.enemies_table[src[0]] -= 1
 
                 if dst_new_el.get_name() == "DRILL_PIT":
-                    print("4")
                     self.bricks_table[dst[0]].destroy(self.players_table[src[0]].id)
 
                 # TODO: update tables
@@ -380,7 +387,6 @@ class Game:
                 ))
 
         # TODO: enemy stategy
-        print("world actions:",new_changes_list)
         return new_changes_list
 
     def do_tick(self, users_actions):
