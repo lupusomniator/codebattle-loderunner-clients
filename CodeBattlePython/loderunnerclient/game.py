@@ -419,8 +419,8 @@ class Game:
 
         """
         for i in range(ticks):
-            self.do_tick([(self.find_hero()[0], ask_for_next_action())])
-            #self.do_tick(self.get_random_users_actions())
+            #self.do_tick([(self.find_hero()[0], ask_for_next_action())])
+            self.do_tick(self.get_random_users_actions())
             #time.sleep(0.3)
             if render:
                 print_table(self.mutable_board)
