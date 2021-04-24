@@ -1,8 +1,9 @@
 import random
 import time
+from collections import defaultdict
 from loderunnerclient.internals.actions import LoderunnerAction
 from loderunnerclient.internals.board import Board
-from loderunnerclient.internals.element import is_actor, is_holding_actor
+from loderunnerclient.internals.element import Element, is_actor, is_holding_actor
 from loderunnerclient.elements_actions_handler import ElementActionHandler, MapChangeType, MapChange
 from loderunnerclient.internals.point import Point
 from loderunnerclient.internals.constants import _ELEMENTS_CAN_FLIED
@@ -66,8 +67,7 @@ class Score:
 class Brick:
     TICKS_TILL_FILL = 3
 
-    def __init__(self, point, element, counter = 0):
-        self.point = point
+    def __init__(self, element, counter = 0):
         self.element = element
         self.counter = counter
 
@@ -92,31 +92,31 @@ class Brick:
 class Player:
     TICKS_TILL_SHADOW_EFFECT_ENDS = 5
 
-    def __init__(self, point, element, score=Score()):
-        self.point = point
+    def __init__(self, element, score=Score()):
         self.element = element
         self.score = score
 
     def reward(self, rewardType):
-        self.score(reward(rewardType))
-
-    def update_point(self, new_point):
-        self.point = point
+        self.score.reward(rewardType)
 
     def update_element(self, element):
         self.element = element
 
-class Enemy:
-    def __init__(self, point):
-        self.point = point
-
-    def suggest_action(self, board):
-        return LoderunnerAction().DO_NOTHING
-
 class Game:
-    def add_to_table(self, table, value):
+    def add_to_table(self, table, point, value):
         table[self.cur_max_index] = value
         self.cur_max_index += 1        
+        
+    def update_player_position(self, old_point, new_point):
+        value = self.players_table[old_point]
+        assert new_point not in self.players_table
+        self.players_table.pop(old_point)
+        self.players_table[new_point] = value
+
+    def update_enemy_position(self, old_point, new_point):
+        assert old_point in self.enemies_positions
+        self.enemies_positions[old_point] -= 1
+        self.enemies_positions[new_point] += 1
         
     def __init__(self, board):
         self.cur_max_index = 0
@@ -125,7 +125,7 @@ class Game:
         self.static_board = board.get_elements_board(static_only=True)
 
         self.bricks_table = dict()
-        self.enemies_table = dict()
+        self.enemies_table = defaultdict(int)
         self.players_table = dict()
         self.indexes_table = dict()
 
@@ -133,14 +133,16 @@ class Game:
         for point in brick_positions:
             self.add_to_table(
                 self.bricks_table,
-                Brick(point, self.static_board[point.get_x()][point.get_y()])
+                point,
+                Brick(self.static_board[point.get_x()][point.get_y()])
             )
 
         enemies_positions = set(board.get_enemy_positions())
         for point in enemies_positions:
             self.add_to_table(
                 self.enemies_table, 
-                Enemy(point)
+                point,
+                self.enemies_table[point] + 1
             )
 
         heroes_positions = {board.get_my_position()}
@@ -148,7 +150,8 @@ class Game:
         for point in enemies_positions:
             self.add_to_table(
                 self.players_table, 
-                Player(point, self.mutable_board[point.get_x()][point.get_y()])
+                point,
+                Player(self.mutable_board[point.get_x()][point.get_y()])
             )
 
     def find_all_heroes(self):
