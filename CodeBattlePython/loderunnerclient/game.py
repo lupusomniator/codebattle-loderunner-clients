@@ -48,6 +48,7 @@ class RewardType:
 class Score:
     def __init__(self):
         self.__reset_strick__()
+        self.score = 0
 
     def __reset_strick__(self):
         self.gold_strick = {
@@ -146,8 +147,8 @@ class Game:
             rev_point = Point(point.get_y(), point.get_x())
             self.enemies_table[rev_point] = self.enemies_table[rev_point] + 1
 
-        heroes_positions = {board.get_my_position()}
-        heroes_positions.update(board.get_other_hero_positions())
+        heroes_positions = [board.get_my_position()]
+        heroes_positions.extend(list(board.get_other_hero_positions()))
         for point in heroes_positions:
             rev_point = Point(point.get_y(), point.get_x())
             self.players_table[rev_point] = Player(self.mutable_board[rev_point.get_y()][rev_point.get_x()])
@@ -236,6 +237,8 @@ class Game:
             return x, y
 
         def apply_change(point, element):
+            main_hero_point = self.players_index_to_point[0]
+            print("score: ", str(self.players_table[main_hero_point].score.score))
             x, y = point.get_x(), point.get_y()
             self.mutable_board[x][y] = element
 
