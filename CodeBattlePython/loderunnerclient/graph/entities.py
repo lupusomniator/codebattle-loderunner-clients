@@ -5,10 +5,9 @@ _ENTITY_ELEMENTS = dict(
     GREEN_GOLD="&",
     YELLOW_GOLD="$",
     RED_GOLD="@",
-    THE_SHADOW_PILL="S",
-    PORTAL = "⊛"
+    SHADOW_PILL="S",
+    PORTAL="⊛"
 )
-
 
 # Entities
 
@@ -52,7 +51,7 @@ class GoldRed(AbstractEntity):
 
 class Pill(AbstractEntity):
     states = dict(
-        THE_SHADOW_PILL="S"
+        SHADOW_PILL="S"
     )
 
     def __init__(self, *args):

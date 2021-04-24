@@ -22,6 +22,7 @@ class Hero(AbstractActor):
         HERO_FALL_RIGHT="[",
         HERO_PIPE_LEFT="{",
         HERO_PIPE_RIGHT="}",
+        HERO_SHADOW_DIE="x",
         HERO_SHADOW_DRILL_LEFT="⊰",
         HERO_SHADOW_DRILL_RIGHT="⊱",
         HERO_SHADOW_LADDER="⍬",
@@ -56,15 +57,24 @@ class Hero(AbstractActor):
 class OtherHero(AbstractActor):
     states = dict(
         OTHER_HERO_DIE="Z",
+        OTHER_HERO_DRILL_LEFT="⌋",
+        OTHER_HERO_DRILL_RIGHT="⌊",
         OTHER_HERO_LEFT=")",
         OTHER_HERO_RIGHT="(",
+        OTHER_HERO_FALL_LEFT="⊐",
+        OTHER_HERO_FALL_RIGHT="⊐",
         OTHER_HERO_LADDER="U",
         OTHER_HERO_PIPE_LEFT="Э",
         OTHER_HERO_PIPE_RIGHT="Є",
+
         OTHER_HERO_SHADOW_DIE="⋈",
+        OTHER_HERO_SHADOW_DRILL_LEFT="⋰",
+        OTHER_HERO_SHADOW_DRILL_RIGHT="⋱",
         OTHER_HERO_SHADOW_LEFT="⋊",
         OTHER_HERO_SHADOW_RIGHT="⋉",
         OTHER_HERO_SHADOW_LADDER="⋕",
+        OTHER_HERO_SHADOW_FALL_LEFT="⋣",
+        OTHER_HERO_SHADOW_FALL_RIGHT='⋢',
         OTHER_HERO_SHADOW_PIPE_LEFT="⊣",
         OTHER_HERO_SHADOW_PIPE_RIGHT="⊢",
     )

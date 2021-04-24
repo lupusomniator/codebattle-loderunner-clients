@@ -33,7 +33,7 @@ def create_graph_no_edges(board: Board):
     for strpos, char in enumerate(board._string):
         point = board._strpos2pt(strpos)
         element = Element(char)
-        space, entry = create_space_and_entry(element)
+        space, entry = create_space_and_entry(element)  # space always returned, entry can be None
         graph.add_node(point, space=space, entry=entry, builded=False)
         if entry and entry.name == "HERO":
             start_point = point
@@ -47,7 +47,6 @@ def get_ij(point):
 
 def fulfill_graph_edges_from_point(graph: nx.DiGraph, board: Board, start_point: Point,
                                    max_depth: int = 10, verbose=False):
-    graph = nx.DiGraph(graph)
     closest_distances: DefaultDict[Point] = defaultdict(lambda: float('inf'))
     closest_distances[start_point] = 0
 
