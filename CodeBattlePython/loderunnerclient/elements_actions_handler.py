@@ -154,6 +154,12 @@ class ElementActionHandler:
                 (newp, Element('HERO_RIGHT'))
             ])
 
+        if cur_static_elem.get_name() == 'LADDER' and new_elem.get_name() == 'PIPE':
+            return MapChange([
+                (p, cur_static_elem),
+                (newp, Element('HERO_PIPE_RIGHT'))
+            ])
+
         return MapChange()
 
     @staticmethod
