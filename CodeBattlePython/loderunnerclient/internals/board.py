@@ -1,8 +1,8 @@
 from math import sqrt
 import numpy as np
-from loderunnerclient.internals.element import Element, value_of, index_to_char, char_to_index
+from loderunnerclient.internals.element import Element, value_of, index_to_char, char_to_index, char_of
 from loderunnerclient.internals.point import Point
-from loderunnerclient.internals.constants import _STATIC_ELEMENTS
+from loderunnerclient.internals.constants import _STATIC_ELEMENTS, _HEROES_ON_STATIC_ELEMENTS_MAP
 
 
 
@@ -37,10 +37,15 @@ class Board:
         table = [[0 for _ in range(self._size)] for _ in range(self._size)]
         for i, c in enumerate(self._string):
             x, y = self._strpos2xy(i)
-            if not static_only or value_of(c) in _STATIC_ELEMENTS:
-                table[y][x] = Element(value_of(c))
+            if static_only:
+                if value_of(c) in _HEROES_ON_STATIC_ELEMENTS_MAP:
+                    c = char_of(_HEROES_ON_STATIC_ELEMENTS_MAP[value_of(c)])
+                if value_of(c) in _STATIC_ELEMENTS:
+                    table[y][x] = Element(value_of(c))
+                else:
+                    table[y][x] = Element(value_of(" "))
             else:
-                table[y][x] = Element(value_of(" "))
+                table[y][x] = Element(value_of(c))
             
         return table
 
