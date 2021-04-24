@@ -314,7 +314,7 @@ class Game:
                             # TODO: возможна ситуация, когда и игрок и охотник шагают в одну сторону находясь на соседних клетках
                             x, y = get_random_empty_position(self.mutable_board)
                             self.update_player_position(src[0], Point(x, y))
-                            self.mutable_board[x][y] = Element('HERO_RIGHT')
+                            self.mutable_board[x][y] = self.mutable_board[src_x][src_y]
                             self.players_table[src[0]].reward(RewardType.DIE)
                             continue
                         # TODO: if is_shadow_pill(dst_old_el)
@@ -327,7 +327,7 @@ class Game:
                     if is_hero(dst_old_el):
                         x, y = get_random_empty_position(self.mutable_board)
                         self.update_player_position(src[0], Point(x, y))
-                        self.mutable_board[x][y] = Element('HERO_RIGHT')
+                        self.mutable_board[x][y] = self.mutable_board[src_x][src_y]
                         self.players_table[dst[0]].reward(RewardType.DIE)
                         continue
                     # TODO: if is_pit_fill(dst_old_el)

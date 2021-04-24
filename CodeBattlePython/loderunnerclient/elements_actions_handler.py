@@ -1,14 +1,16 @@
 from loderunnerclient.internals.actions import LoderunnerAction
 from loderunnerclient.internals.point import Point
-from loderunnerclient.internals.element import Element, is_actor
+from loderunnerclient.internals.element import Element, is_actor, to_falling, to_ladder, to_pipe, to_element
 from loderunnerclient.internals.constants import _ELEMENTS_CAN_FLIED
 from enum import Enum
 import random
+
 
 class MapChangeType(Enum):
     NONE = 0,
     CHANGE = 1,
     MOVE_OR_INTERACT = 2
+
 
 class MapChange:
     def __init__(self, changes=None):
@@ -88,7 +90,7 @@ class ElementActionHandler:
 
         if action == action.DRILL_RIGHT:
             return ElementActionHandler.drill_handler(p, table, static_table, "RIGHT")
-        
+
         if action == action.TICK:
             raise NotImplementedError()
 
@@ -109,7 +111,6 @@ class ElementActionHandler:
             element = Element("PIT_FILL_1")
 
         return MapChange([(p, element)])
-            
 
     @staticmethod
     def drill_handler(p: Point, table, static_table, direction):
@@ -123,8 +124,9 @@ class ElementActionHandler:
         if element_on_target.get_name() != 'NONE':
             return MapChange()
 
+        prefix = ElementActionHandler.get_prefix(table[p.get_x()][p.get_y()])
         return MapChange([
-            (p, Element('HERO_DRILL_' + direction)),
+            (p, Element(prefix + 'DRILL_' + direction)),
             (Point(p.get_x() + 1, p.get_y() + sign), Element('DRILL_PIT'))
         ])
 
@@ -138,7 +140,7 @@ class ElementActionHandler:
             x = random.randrange(0, len(table))
             y = random.randrange(0, len(table))
 
-        result.append((Point(x, y), Element('HERO_RIGHT')))
+        result.append((Point(x, y), table[p.get_x()][p.get_y()]))
         assert len(result) < 3
         return MapChange(result)
 
@@ -157,12 +159,12 @@ class ElementActionHandler:
         else:
             if new_elem.get_name() == 'LADDER':
                 result.append((p, cur_static_elem))
-                result.append((newp, Element('HERO_LADDER')))
+                result.append((newp, to_ladder(table[p.get_x()][p.get_y()].get_name())))
 
         if cur_static_elem.get_name() == 'LADDER' and new_elem.get_name() in _ELEMENTS_CAN_FLIED:
             return MapChange([
                 (p, cur_static_elem),
-                (newp, Element('HERO_FALL_RIGHT'))
+                (newp, to_falling(table[p.get_x()][p.get_y()].get_name()))
             ])
         assert len(result) < 3
         return MapChange(result)
@@ -175,19 +177,20 @@ class ElementActionHandler:
         if cur_static_elem.get_name() == 'LADDER' and new_elem.get_name() == 'LADDER':
             return MapChange([
                 (p, cur_static_elem),
-                (newp, Element('HERO_LADDER'))
+                (newp, to_ladder(table[p.get_x()][p.get_y()].get_name()))
             ])
 
         if cur_static_elem.get_name() == 'LADDER' and new_elem.get_name() == 'NONE':
             return MapChange([
                 (p, cur_static_elem),
-                (newp, Element('HERO_RIGHT'))
+                # fall from ladder
+                (newp, table[p.get_x()][p.get_y()].get_name())
             ])
 
         if cur_static_elem.get_name() == 'LADDER' and new_elem.get_name() == 'PIPE':
             return MapChange([
                 (p, cur_static_elem),
-                (newp, Element('HERO_PIPE_RIGHT'))
+                (newp, to_pipe(table[p.get_x()][p.get_y()].get_name()))
             ])
 
         return MapChange()
@@ -202,19 +205,20 @@ class ElementActionHandler:
         if new_elem.get_char() in '#!☼':
             return MapChange()
 
+        prefix = ElementActionHandler.get_prefix(table[p.get_x()][p.get_y()])
         result = []
         if new_elem.get_char() in ' ~H$&@⊛S':
             result.append((p, cur_elem))
             if new_elem.get_name() == 'PIPE':
-                result.append((newp, Element('HERO_PIPE_' + direction)))
+                result.append((newp, Element(prefix + 'PIPE_' + direction)))
             elif new_elem.get_name() == 'LADDER':
-                result.append((newp, Element('HERO_LADDER')))
+                result.append((newp, Element(prefix + 'LADDER')))
             elif new_elem.get_char() in ' $&@':
-                result.append((newp, Element('HERO_' + direction)))
+                result.append((newp, Element(prefix + direction)))
             elif new_elem.get_name() == 'PORTAL':
-                result.append((newp, Element('HERO_' + direction)))
+                result.append((newp, Element(prefix + direction)))
             elif new_elem.get_name() == 'THE_SHADOW_PILL':
-                result.append((newp, Element('HERO_SHADOW_' + direction)))
+                result.append((newp, Element(prefix + 'SHADOW_' + direction)))
         assert len(result) < 3
         return MapChange(result)
 
@@ -225,3 +229,14 @@ class ElementActionHandler:
             if is_actor(old_element):
                 return False
         return True
+
+    @staticmethod
+    def get_prefix(el):
+        if 'OTHER_HERO' in el.get_name():
+            return 'OTHER_HERO_'
+
+        if 'HERO' in el.get_name():
+            return 'HERO_'
+
+        if 'ENEMY' in el.get_name():
+            return 'ENEMY_'
