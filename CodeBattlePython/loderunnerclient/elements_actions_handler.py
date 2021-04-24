@@ -30,17 +30,20 @@ class MapChange:
 
 class ElementActionHandler:
     @staticmethod
-    def apply(p: Point, action: LoderunnerAction, table, static_table):
-        if action == LoderunnerAction.TICK:
+    def apply(p: Point, action: LoderunnerAction, table, static_table, cur_elem=None):
+        if action == LoderunnerAction.FILL_PIT:
             return MapChange()
-
-        cur_elem = static_table[p.get_x()][p.get_y()]
+        if cur_elem is None:
+            cur_elem = static_table[p.get_x()][p.get_y()]
 
         if action == action.SUICIDE:
             return ElementActionHandler.suicide_handler(p, table, static_table)
 
 
         elem_under_cur = table[p.get_x() + 1][p.get_y()]
+
+        if action == LoderunnerAction.FILL_PIT:
+            return ElementActionHandler.pit_fill_handler(p, table, static_table)
 
         if cur_elem.get_name() == 'NONE' and elem_under_cur.get_name() in _ELEMENTS_CAN_FLIED:
             return MapChange([
@@ -76,6 +79,20 @@ class ElementActionHandler:
             raise NotImplementedError()
 
         return MapChange()
+
+    @staticmethod
+    def pit_fill_handler(p: Point, table, static_table, element):
+        print(table[p.get_x()][p.get_y()].get_name())
+        if table[p.get_x()][p.get_y()].get_name() == "DRILL_PIT":
+            return MapChange([p, Element(" ")])
+
+        if "PIT" in table[p.get_x()][p.get_y()].get_name():
+            element = Element(str(int(element.get_char()) + 1))
+        else:
+            element = Element("PIT_FILL_1")
+
+        return MapChange([p, element])
+            
 
     @staticmethod
     def drill_handler(p: Point, table, static_table, direction):

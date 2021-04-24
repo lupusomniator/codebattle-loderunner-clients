@@ -43,15 +43,14 @@ class RewardType:
 
 class Score:
     def __init__(self):
-        self.__reset_score__()
+        self.__reset_strick__()
 
-    def __reset_score__(self):
+    def __reset_strick__(self):
         self.gold_strick = {
             "GREEN": 0,
             "YELLOW": 0,
             "RED": 0
         }
-        self.score = 0
 
     def reward(self, rewardType):
         if (rewardType == RewardType.GREEN or 
@@ -63,37 +62,39 @@ class Score:
         if rewardType == RewardType.KILL:
             self.score += 10
         if rewardType == RewardType.DIE:
-            self.__reset_score__()
+            self.__reset_strick__()
 
 class Brick:
     TICKS_TILL_FILL = 3
 
-    def __init__(self, element, counter = 0):
+    def __init__(self, element):
         self.element = element
-        self.counter = counter
+        self.counter = -1
+        self.owner = -1
+
+    def destroy(self):
+        self.counter = Brick.TICKS_TILL_FILL
 
     def tick(self):
-        self.counter += 1
-        if self.element.get_name() == "PIT_FILL_4":
-            self.element = Element("BRICK")
+        self.counter = max(self.counter - 1, -1)
+        # Возвращаем True и для DRILL_PIT и для FILL_PIT
+        if self.counter == 0 or ("PIT" in self.element.get_name()):
+            return True
+        if self.counter == -1:
+            self.set_owner(-1)
+        return False
 
-        if self.element.get_name() == "BRICK":
-            self.counter = 0
-            return False
+    def set_owner(self, idx):
+        self.owner = idx
 
-        return True
-        # MOVE TO EVENTS HANDLER
-        # if self.counter == Brick.TICKS_TILL_FILL:
-        #     self.element = Element("PIT_FILL_1")
-        # elif self.counter > Brick.TICKS_TILL_FILL:
-        #     self.element = Element(str(int(self.element.get_char()) + 1))
-
-        # return MapAction([self.point, self.element])
 
 class Player:
+    TRANSPARENT_INDEX = 0
     TICKS_TILL_SHADOW_EFFECT_ENDS = 5
 
     def __init__(self, element, score=Score()):
+        self.id = Player.TRANSPARENT_INDEX
+        Player.TRANSPARENT_INDEX += 1
         self.element = element
         self.score = score
 
@@ -109,6 +110,7 @@ class Game:
         assert new_point not in self.players_table
         self.players_table.pop(old_point)
         self.players_table[new_point] = value
+        self.players_index_to_point[value.id] = new_point
 
     def update_enemy_position(self, old_point, new_point):
         assert old_point in self.enemies_positions
@@ -124,7 +126,7 @@ class Game:
         self.bricks_table = dict()
         self.enemies_table = defaultdict(int)
         self.players_table = dict()
-        self.indexes_table = dict()
+        self.players_index_to_point = dict()
 
         brick_positions = set(board.get_brick_positions())
         for point in brick_positions:
@@ -141,6 +143,7 @@ class Game:
         for point in heroes_positions:
             rev_point = Point(point.get_y(), point.get_x())
             self.players_table[rev_point] = Player(self.mutable_board[rev_point.get_y()][rev_point.get_x()])
+            self.players_index_to_point[self.players_table[rev_point].id] = rev_point
 
     def find_all_heroes(self):
         heroes = []
@@ -225,9 +228,17 @@ class Game:
                 if change.get_type() == MapChangeType.NONE:
                     continue
                 elif change.get_type() == MapChangeType.CHANGE:
-                    # TODO: if is_pit_fill(old_el):
-                    #           kill enemy/player
-                    apply_change(*change.get_changes()[-1])
+                    change = change.get_changes()[0]
+                    x, y = change[0].get_x(), change[0].get_y()
+                    old_el = self.mutable_board[x][y]
+                    new_el = change[1]
+                    if is_pit_fill(new_el):
+                        brick = self.bricks_table[change[0]]
+                        if is_hero(old_el) or is_enemy(old_el):
+                            player_point = self.players_index_to_point[brick.owner]
+                            self.players_table[player_point].reward(RewardType.KILL)
+
+                    apply_change(*change.get_changes()[0])
                 elif change.get_type() == MapChangeType.MOVE_OR_INTERACT:
                     src, dst = change.get_changes()
                     src_x, src_y = src[0].get_x(), src[0].get_y()
@@ -288,13 +299,17 @@ class Game:
         """
         new_changes_list = []
         # Зарастание ям
-        # for point in self.brick_positions:
-        #     new_changes_list.append(ElementActionHandler.apply(
-        #         point,
-        #         LoderunnerAction.TICK,
-        #         self.mutable_board,
-        #         self.static_board
-        #     ))
+
+        for point, brick in self.bricks_table.items():
+            if brick.tick():
+                print("tick")
+                new_changes_list.append(ElementActionHandler.apply(
+                    point,
+                    LoderunnerAction.FILL_PIT,
+                    self.mutable_board,
+                    self.static_board,
+                    brick.element
+                ))
 
         # Падение героев и врагов
         not_holding_actors = self.find_all_not_holding_actors()
