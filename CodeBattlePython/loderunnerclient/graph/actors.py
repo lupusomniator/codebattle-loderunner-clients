@@ -8,7 +8,7 @@ from typing import Iterable, Union, Optional, Tuple
 class AbstractActor:
     def __init__(self, element: Element):
         self.element = element
-        self.reward = 0
+        self.reward = -0.11
     
     def get_reward(self):
         return self.reward
@@ -95,7 +95,6 @@ class OtherHero(AbstractActor):
         self.is_on_ladder = is_on_ladder
         self.is_shadowed = is_shadowed
         self.name = "OTHER_HERO"
-        self.reward = -3
 
     def get_reward(self):
         return -1 if self.is_shadowed else 0

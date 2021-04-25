@@ -71,7 +71,7 @@ class Portal(AbstractEntity):
     def __init__(self, *args):
         super().__init__(*args)
         self.name = "PORTAL"
-        self.reward = 0.5
+        self.reward = 0
 
 
 def is_entity(value: Union[str, Element]):

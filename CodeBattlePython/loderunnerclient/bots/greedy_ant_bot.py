@@ -1,6 +1,7 @@
 from loderunnerclient.util import count_perf, PerfStat
 from typing import Iterable, Union, Optional, Tuple, Any, List, Dict, DefaultDict, Set
 from collections import defaultdict
+
 import numpy as np
 import networkx as nx
 from copy import copy, deepcopy
@@ -34,6 +35,9 @@ class Ant:
 
         self.reward = 0
 
+    def get_attenuation(self, step_num):
+        return ((self.max_depth - step_num + 1) / self.max_depth) ** 2
+
     #  идти по графу случайным образом на фиксированную глубину (не делая шаг назад)
     #  возвращает список встреченных сущностей
     @count_perf
@@ -56,14 +60,13 @@ class Ant:
             prev_action = initial_action
 
         while depth <= max_depth:
-            print(cur_point, graph.get_node_entry(cur_point))
             if graph.get_node_is_build(cur_point) is False:
                 graph.rebuild_graph_in_point(cur_point, max_depth // 2)
             if cur_point != self.start_point:
                 cur_entry = graph.get_node_entry(cur_point)
                 history[depth - 1] = cur_entry  # None or Entity or Actor
                 if not cur_entry is None:
-                    self.reward += cur_entry.get_reward()
+                    self.reward += cur_entry.get_reward() * self.get_attenuation(depth)
 
                 path[depth - 1] = cur_point
                 action_sequence[depth - 1] = prev_action
@@ -82,14 +85,16 @@ class Ant:
             # all edges has only one action (only loop to itself contains 2 possible actions)
 
             chosen_action = graph.get_edge_actions(cur_point, chosen_random_pt_to_move)[0]
-            if chosen_action is None:
-                break
 
             # make step
             depth += 1
             prev_point = cur_point
             cur_point = chosen_random_pt_to_move
             prev_action = chosen_action
+
+        for i, a in enumerate(action_sequence):
+            if a is None:
+                self.reward -= 0.1 * self.get_attenuation(i)
 
         return self
 
@@ -101,24 +106,41 @@ class GreedyAntBot(AbstractBot):
         self.graph = None
         self.ant_count = ant_count
         self.max_depth = max_depth
+        self.print_stat = print_stat
+        self.last_pos = None
     
     @count_perf
     def choose_action(self, board: Board) -> LoderunnerAction:
-        PerfStat.print_stat()
+        # PerfStat.print_stat()
         # return LoderunnerAction.SUICIDE
         hero_pos = board.get_my_position()
+        if self.last_pos is None:
+            self.last_pos = hero_pos
 
         dag = DynamicActionGraph(board, self.max_depth)
-
-        ants = []
-        for i in range(self.ant_count):
-            ants.append(Ant(hero_pos, dag, self.max_depth).walk())
-        rewards = [ant.reward for ant in ants]
-
-        best_ant = ants[rewards.index(max(rewards))]
-
-        # если лучший никуда не смог пойти
-        if best_ant.action_sequence[0] is None:
+    
+        # get edges from current point
+        edges = dag[hero_pos]
+        # points where edges are going
+        points_to = list(set(edges.keys()) - set([hero_pos]))
+        if len(points_to) == 0:
             return LoderunnerAction.SUICIDE
 
-        return best_ant.action_sequence[0]
+        max_action = None
+        max_reward = -10000000
+        for point in points_to:
+            actions = dag.get_edge_actions(hero_pos, point)
+            total_reward = 0
+            if not actions is None:
+                action = actions[0]
+                for i in range(self.ant_count):
+                    ant = Ant(hero_pos, dag, self.max_depth, initial_transition=(point, action))
+                    total_reward += ant.walk().reward
+                print(point, action, total_reward)
+                if total_reward > max_reward:
+                    max_action = action
+                    max_reward = total_reward
+        if max_action is None:
+            return LoderunnerAction.SUICIDE
+        print("MAX ACTION:", max_action, max_reward)
+        return max_action

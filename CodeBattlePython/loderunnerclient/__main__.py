@@ -29,7 +29,7 @@ def local_main():
     # print(ant.reward)
     # print(ant.action_sequence)
 
-    GreedyAntBot(2, 20, False).choose_action(board)
+    GreedyAntBot(1000, 30, True).choose_action(board)
 
 def server_main():
     # env = Environment()
@@ -37,7 +37,7 @@ def server_main():
         # change this url to your
         "https://dojorena.io/codenjoy-contest/board/player/dojorena392?code=407418550408423703"
     )
-    gcb.run(GreedyAntBot(1000, 30).choose_action)
+    gcb.run(GreedyAntBot(300, 30).choose_action)
 
 
 if __name__ == "__main__":
@@ -47,8 +47,8 @@ if __name__ == "__main__":
     #main()
     # server_main()
 
-    local_main()
-    PerfStat.print_stat()
+    # local_main()
+    # PerfStat.print_stat()
 
-    # server_main()
+    server_main()
     # local_main()
