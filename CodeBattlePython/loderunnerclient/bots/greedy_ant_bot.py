@@ -1,8 +1,9 @@
+from loderunnerclient.util import count_perf
 from typing import Iterable, Union, Optional, Tuple, Any, List, Dict, DefaultDict, Set
 from collections import defaultdict
 import numpy as np
 import networkx as nx
-
+from copy import copy, deepcopy
 from loderunnerclient.internals.element import Element
 from loderunnerclient.internals.board import Board
 from loderunnerclient.internals.actions import LoderunnerAction
@@ -17,10 +18,12 @@ from loderunnerclient.bots.abstract_bot import AbstractBot
 
 
 class Ant:
+    @count_perf
     def __init__(self, p: Point, graph: DynamicActionGraph, max_depth,
-                 game_emulator=None, initial_transition: Tuple[Point, LoderunnerAction]=None):
+                 game_emulator=None, initial_transition: Tuple[Point, LoderunnerAction] = None):
         self.start_point: Point = p
-        self.graph: DynamicActionGraph = graph
+        self.graph: DynamicActionGraph = copy(graph)
+        graph.graph = nx.DiGraph(graph.graph)
         self.max_depth = max_depth
         self.game_emulator = game_emulator
         self.initial_transition: Tuple[Point, LoderunnerAction] = initial_transition
@@ -29,8 +32,11 @@ class Ant:
         self.path: List[Point] = [None] * self.max_depth
         self.action_sequence: List[LoderunnerAction] = [None] * self.max_depth  # actions (graph edges)
 
+        self.reward = 0
+
     #  идти по графу случайным образом на фиксированную глубину (не делая шаг назад)
     #  возвращает список встреченных сущностей
+    @count_perf
     def walk(self):
         graph = self.graph
         history = self.history
@@ -57,6 +63,10 @@ class Ant:
                 if is_dangerous_actor(cur_entry) or is_not_dangerous_actor(cur_entry):
                     break
                 history[depth - 1] = cur_entry  # None or Entity or Actor
+                try:
+                    self.reward += cur_entry.reward
+                except AttributeError:
+                    pass
                 path[depth - 1] = cur_point
                 action_sequence[depth - 1] = prev_action
 
@@ -66,8 +76,11 @@ class Ant:
                 #  jumped in the gap or something
                 break
             chosen_random_pt_to_move = available_pts_to_move[np.random.randint(len(available_pts_to_move))]
+
             # all edges has only one action (only loop to itself contains 2 possible actions)
+
             chosen_action = graph.get_edge_actions(cur_point, chosen_random_pt_to_move)[0]
+
 
             # make step
             depth += 1
@@ -75,16 +88,32 @@ class Ant:
             cur_point = chosen_random_pt_to_move
             prev_action = chosen_action
 
+        return self
+
 
 class GreedyAntBot(AbstractBot):
-    def __init__(self):
+    def __init__(self, ant_count=20):
         super().__init__()
         self.board = None
         self.graph = None
+        self.ant_count = ant_count
 
     def choose_action(self, board: Board) -> LoderunnerAction:
-        pass
+        # return LoderunnerAction.SUICIDE
+        hero_pos = board.get_my_position()
 
+        dag = DynamicActionGraph(board, 20)
 
+        ants = []
+        for i in range(self.ant_count):
+            ants.append(Ant(hero_pos, dag, 20).walk())
 
+        rewards = [ant.reward for ant in ants]
 
+        best_ant = ants[rewards.index(max(rewards))]
+
+        # если лучший никуда не смог пойти
+        if best_ant.action_sequence[0] is None:
+            return LoderunnerAction.SUICIDE
+
+        return best_ant.action_sequence[0]

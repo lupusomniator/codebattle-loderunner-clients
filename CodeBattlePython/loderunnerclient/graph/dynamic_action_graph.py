@@ -1,3 +1,4 @@
+from loderunnerclient.util import count_perf
 from typing import Iterable, Union, Optional, Tuple, Any, List, Dict, DefaultDict, Set
 from collections import defaultdict
 import numpy as np
@@ -36,9 +37,11 @@ class DynamicActionGraph:
         # add edges in graph around the hero in range of max_depth
         self.rebuild_graph_in_point(self.hero_point, max_depth=self.max_depth)
 
+    @count_perf
     def rebuild_graph_in_point(self, p: Point, max_depth):
         return fulfill_graph_edges_from_point(self.graph, self.initial_board, p, max_depth, clone=False)
 
+    @count_perf
     def tick(self, point_action: Tuple):
         # update graph
         self.update_graph_on_tick()
@@ -74,9 +77,9 @@ class DynamicActionGraph:
             self.timers[point_target] = timer
 
 
-
-
+    @count_perf
     def update_graph_on_tick(self):
+        print("sd")
         exceeded_timers = self.update_timers()
         # for new pits remove edges to the node above
         # mark node and node above as unbuilt
@@ -108,6 +111,7 @@ class DynamicActionGraph:
             self.set_node_unbuild(point_up)
             self.rebuild_graph_in_point(point_up, self.max_depth)
 
+    @count_perf
     def update_timers(self):
         exceeded_timers = dict(
             new_pits=[],
@@ -139,30 +143,39 @@ class DynamicActionGraph:
                     exceeded_timers["new_filled_pits"].append(point)
         return exceeded_timers
 
+    @count_perf
     def get_node_space(self, p: Point):
         return self.graph.nodes[p][NodeProps.space]
 
+    @count_perf
     def set_node_space(self, p: Point, val):
         self.graph.nodes[p][NodeProps.space] = val
 
+    @count_perf
     def get_node_entry(self, p: Point):
         return self.graph.nodes[p][NodeProps.entry]
 
+    @count_perf
     def set_node_entry(self, p: Point, val):
         self.graph.nodes[p][NodeProps.entry] = val
 
+    @count_perf
     def set_node_unbuild(self, p: Point):
         self.graph.nodes[p][NodeProps.build] = False
 
+    @count_perf
     def get_node_is_build(self, p: Point):
         return self.graph.nodes[p][NodeProps.build]
 
+    @count_perf
     def get_edge_actions(self, p1: Point, p2: Point):
         return self.graph.get_edge_data(p1, p2)[EdgeProps.actions]
+
 
     # # def get_action_transitions(self, p: Point):
     #     pass
 
+    @count_perf
     def silent_remove_edge(self, node_tuple):
         try:
             self.graph.remove_edge(node_tuple)
