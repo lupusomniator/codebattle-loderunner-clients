@@ -15,7 +15,7 @@ from collections import defaultdict
 from loderunnerclient.graph.entities import is_entity, create_entity
 from loderunnerclient.graph.space import is_space, is_available_space, create_space_element, \
     Direction, Brick, EmptySpace
-from loderunnerclient.graph.actors import is_actor, create_actor
+from loderunnerclient.graph.actors import is_actor, create_actor, AbstractActor
 from loderunnerclient.graph.di_graph import \
     create_space_and_entry, \
     create_graph_no_edges, \
@@ -23,7 +23,8 @@ from loderunnerclient.graph.di_graph import \
     get_ij, \
     NodeProps, \
     EdgeProps, \
-    check_get_timer
+    check_get_timer, \
+    ActionToDirection
 
 
 class DynamicActionGraph:
@@ -58,6 +59,9 @@ class DynamicActionGraph:
 
         is_secondary_bot_action = isinstance(actor, str)
         assert is_secondary_bot_action, f"For now this is for secondary bots only"
+        if not is_secondary_bot_action:
+            if not isinstance(actor, AbstractActor):
+                raise RuntimeError(f"Tried to apply action for non-actor object {actor}")
 
         found_edge = None
         for point_to in self.graph[point]:
@@ -75,9 +79,23 @@ class DynamicActionGraph:
             timer = check_get_timer(self.get_node_space(point_target).element)
             assert timer is not None
             self.timers[point_target] = timer
+<<<<<<< Updated upstream
 
 
     @count_perf
+=======
+        if action in [LoderunnerAction.GO_UP,
+                      LoderunnerAction.GO_RIGHT,
+                      LoderunnerAction.GO_LEFT,
+                      LoderunnerAction.GO_DOWN]:
+            point_to = ActionToDirection[action]
+            if is_secondary_bot_action:
+                self.move_secondary_bot(point, point_to)
+            else:
+                self.move_entry(point, point_to)
+
+
+>>>>>>> Stashed changes
     def update_graph_on_tick(self):
         print("sd")
         exceeded_timers = self.update_timers()
@@ -159,7 +177,16 @@ class DynamicActionGraph:
     def set_node_entry(self, p: Point, val):
         self.graph.nodes[p][NodeProps.entry] = val
 
+<<<<<<< Updated upstream
     @count_perf
+=======
+    def move_entry(self, p_from: Point, p_to: Point):
+        entry = self.get_node_entry(p_from)
+        assert entry is not None, "Tried to move entry from point with no entry"
+        self.set_node_entry(p_from, None)
+        self.set_node_entry(p_to, entry)
+
+>>>>>>> Stashed changes
     def set_node_unbuild(self, p: Point):
         self.graph.nodes[p][NodeProps.build] = False
 
@@ -167,7 +194,22 @@ class DynamicActionGraph:
     def get_node_is_build(self, p: Point):
         return self.graph.nodes[p][NodeProps.build]
 
+<<<<<<< Updated upstream
     @count_perf
+=======
+    def get_node_secondary_bot(self, p: Point):
+        return self.graph.nodes[p][NodeProps.bot]
+
+    def set_node_secondary_bot(self, p: Point, bot):
+        self.graph.nodes[p][NodeProps.bot] = bot
+
+    def move_secondary_bot(self, p_from: Point, p_to: Point):
+        bot = self.get_node_secondary_bot(p_from)
+        assert bot is not None, "Tried to move bot from point with no bot"
+        self.set_node_secondary_bot(p_from, None)
+        self.set_node_secondary_bot(p_to, bot)
+
+>>>>>>> Stashed changes
     def get_edge_actions(self, p1: Point, p2: Point):
         return self.graph.get_edge_data(p1, p2)[EdgeProps.actions]
 

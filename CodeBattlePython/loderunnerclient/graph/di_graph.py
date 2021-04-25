@@ -27,6 +27,7 @@ class NodeProps:
     space = "space"
     entry = "entry"
     build = "build"
+    bot = "bot"
 
 
 class EdgeProps:
