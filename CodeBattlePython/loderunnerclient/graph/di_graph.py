@@ -139,9 +139,7 @@ def fulfill_graph_edges_from_point(graph: nx.DiGraph, board: Board, start_point:
         graph.nodes[cur_point][NodeProps.build] = True
 
         space_down = graph.nodes[Point(*(cur_coords + Direction.down))][NodeProps.space]
-        is_on_air = (space_down.name == "NONE" or "PIT_FILL" in space_down.element.get_name()) \
-                    and cur_space.name != "PIPE" \
-                    and cur_space.name != "LADDER"
+        is_on_air = (space_down.name == "NONE" or "PIT_FILL" in space_down.element.get_name())
 
         if verbose:
             print(f"Chosen moves for cur_point {get_ij(cur_point)}:")
@@ -151,27 +149,30 @@ def fulfill_graph_edges_from_point(graph: nx.DiGraph, board: Board, start_point:
             print("depth", depth)
 
         #  Add action-edges for left,right,up,down
-        for i, coords_point_to in enumerate(
-                cur_space.available_moves + cur_coords):
-            point_to = Point(*coords_point_to)
-            space_to = graph.nodes[point_to][NodeProps.space]
+        add_move_edges(graph, board, cur_point, verbose)
+        # for i, coords_point_to in enumerate(
+        #         cur_space.available_moves + cur_coords):
+        #     point_to = Point(*coords_point_to)
+        #     space_to = graph.nodes[point_to][NodeProps.space]
+        #
+        #     if point_to.is_bad(board.get_size()):
+        #         continue
+        #     if not is_available_space(space_to):
+        #         continue
+        #     skip_direction_down = not is_on_air and not (space_down.name == "PIPE" or space_down.name == "LADDER")
+        #     if skip_direction_down and np.all(cur_space.available_moves[i] == Direction.down):
+        #         continue
+        #     if is_on_air and np.all(cur_space.available_moves[i] != Direction.down):
+        #         continue
+        #
+        #     if verbose:
+        #         print(f"\t{get_ij(point_to)}")
+        #     edge_action = get_move_action_by_points(cur_point, point_to)
+        #     assert edge_action not in [LoderunnerAction.DO_NOTHING, LoderunnerAction.DRILL_LEFT,
+        #                                LoderunnerAction.DRILL_RIGHT, LoderunnerAction.SUICIDE]
+        #     graph.add_edge(cur_point, point_to, **{EdgeProps.actions: [edge_action]})
 
-            if point_to.is_bad(board.get_size()):
-                continue
-            if not is_available_space(space_to):
-                continue
-            if not is_on_air and not (space_down.name == "PIPE" or space_down.name == "LADDER") and \
-                    np.all(cur_space.available_moves[i] == Direction.down):
-                continue
-            if is_on_air and np.all(cur_space.available_moves[i] != Direction.down):
-                continue
 
-            if verbose:
-                print(f"\t{get_ij(point_to)}")
-            edge_action = get_move_action_by_points(cur_point, point_to)
-            assert edge_action not in [LoderunnerAction.DO_NOTHING, LoderunnerAction.DRILL_LEFT,
-                                       LoderunnerAction.DRILL_RIGHT, LoderunnerAction.SUICIDE]
-            graph.add_edge(cur_point, point_to, **{EdgeProps.actions: [edge_action]})
         # for every reachable point continue BFS
         for point_to in graph[cur_point]:
             task_stack.append((point_to, new_depth))
@@ -201,14 +202,15 @@ def fulfill_graph_edges_from_point(graph: nx.DiGraph, board: Board, start_point:
         if right_is_empty and right_down_is_break and not is_on_air:
             graph.add_edge(cur_point, right_down_point, **{EdgeProps.actions: [LoderunnerAction.DRILL_RIGHT]})
         # if verbose:
-        #     if cur_point == Point(19, 12):
-        #         print("Checking drilling")
+        #     if cur_point == Point(18,29):
+        #         print(f"Checking point {cur_point}")
         #         print("CUR SPACE", cur_space)
         #         print("SPACE DOWN IS NONE", space_down.name == "NONE")
-        #         print("SPACE DOWN IS NONE", space_down.name == "BRICK")
+        #         print("SPACE DOWN IS BRICK", space_down.name == "BRICK")
         #         print("IS ON AIR", is_on_air)
-        #         print("CANT GO DOWN", not is_on_air and not (space_down.name == "PIPE" or space_down.name == "LADDER") and \
-        #             np.all(cur_space.available_moves[i] == Direction.down))
+        #         print("skip_direction_down", skip_direction_down)
+        #         print("Down move was added:", graph.has_edge(cur_point, Point(*cur_point.coords() + np.array([0,1]))))
+        #         print("DRILLING:")
         #         print(left_is_empty, Point(*(cur_coords + Direction.left)), graph.nodes[Point(*(cur_coords + Direction.left))][NodeProps.space])
         #         print(left_down_point)
         #         print(left_down_point)
@@ -223,6 +225,43 @@ def fulfill_graph_edges_from_point(graph: nx.DiGraph, board: Board, start_point:
         for p in points:
             report[object_name][closest_distances[p]] += 1
     return graph, met_objects, report
+
+
+def add_move_edges(graph: nx.DiGraph, board: Board, cur_point: Point, verbose, mock_space=None):
+    added_edges = []
+    cur_space = graph.nodes[cur_point][NodeProps.space] if mock_space is None else mock_space
+    cur_entry = graph.nodes[cur_point][NodeProps.entry]
+    cur_coords = np.array((cur_point._x, cur_point._y))
+
+    space_down = graph.nodes[Point(*(cur_coords + Direction.down))][NodeProps.space]
+    is_on_air = (space_down.name == "NONE" or "PIT_FILL" in space_down.element.get_name())
+
+    #  Add action-edges for left,right,up,down
+    for i, coords_point_to in enumerate(
+            cur_space.available_moves + cur_coords):
+        point_to = Point(*coords_point_to)
+        space_to = graph.nodes[point_to][NodeProps.space]
+
+        if point_to.is_bad(board.get_size()):
+            continue
+        if not is_available_space(space_to):
+            continue
+        skip_direction_down = not is_on_air and not (
+                    space_down.name == "PIPE" or space_down.name == "LADDER")
+        if skip_direction_down and np.all(cur_space.available_moves[i] == Direction.down):
+            continue
+        if is_on_air and np.all(cur_space.available_moves[i] != Direction.down):
+            continue
+
+        if verbose:
+            print(f"\t{get_ij(point_to)}")
+        edge_action = get_move_action_by_points(cur_point, point_to)
+        assert edge_action not in [LoderunnerAction.DO_NOTHING, LoderunnerAction.DRILL_LEFT,
+                                   LoderunnerAction.DRILL_RIGHT, LoderunnerAction.SUICIDE]
+        if not graph.has_edge(cur_point, point_to):
+            graph.add_edge(cur_point, point_to, **{EdgeProps.actions: [edge_action]})
+            added_edges.append((cur_point, point_to))
+    return added_edges
 
 
 def main():
