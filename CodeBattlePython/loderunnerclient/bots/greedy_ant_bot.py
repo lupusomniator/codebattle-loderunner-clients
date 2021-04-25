@@ -13,7 +13,9 @@ from loderunnerclient.internals.point import Point
 from loderunnerclient.graph.entities import is_entity, create_entity
 from loderunnerclient.graph.space import is_space, is_available_space, create_space_element, Direction, EmptySpace
 from loderunnerclient.graph.actors import is_actor, create_actor, is_dangerous_actor, is_not_dangerous_actor
-from loderunnerclient.graph.di_graph import create_graph_no_edges, fulfill_graph_edges_from_point, add_move_edges
+from loderunnerclient.graph.di_graph import create_graph_no_edges, fulfill_graph_edges_from_point, add_move_edges, \
+    NodeProps, \
+    EdgeProps, get_move_action_by_points
 from loderunnerclient.graph.dynamic_action_graph import DynamicActionGraph
 from loderunnerclient.bots.abstract_bot import AbstractBot
 
@@ -31,8 +33,7 @@ class Ant:
 
         self.history: List = [None] * self.max_depth
         self.path: List[Point] = [None] * self.max_depth
-        self.action_sequence: List[LoderunnerAction] = [
-                                                           None] * self.max_depth  # actions (graph edges)
+        self.action_sequence: List[LoderunnerAction] = [None] * self.max_depth  # actions (graph edges)
 
         self.reward = 0
 
@@ -65,8 +66,8 @@ class Ant:
         while depth <= max_depth:
             for p1, p2 in edges_to_remove_back[depth]:
                 self.graph.graph.remove_edge(p1,p2)
-            for p1, p2 in edges_to_add_back[depth]:
-                self.graph.graph.add_edge(p1,p2)
+            for p1, p2, action in edges_to_add_back[depth]:
+                self.graph.graph.add_edge(p1,p2, **{EdgeProps.actions: [action]})
             if graph.get_node_is_build(cur_point) is False:
                 graph.rebuild_graph_in_point(cur_point, max_depth // 2)
             if cur_point != self.start_point:
@@ -108,14 +109,14 @@ class Ant:
                                    mock_space=EmptySpace(Element("NONE"))))
                 temp_added_edges = [(point_above_drilling, Point(0,1) + point_above_drilling)]
                 for p1,p2 in temp_added_edges:
-                    self.graph.graph.add_edge(p1,p2)
+                    self.graph.graph.add_edge(p1,p2, **{EdgeProps.actions: [get_move_action_by_points(p1,p2)]})
                 edges_to_remove_back[time_when_to_turn_back].extend(temp_added_edges)
 
-                temp_removed_edges = [(Point(-1, 0) + point_above_drilling, point_above_drilling),
-                                      (Point(1, 0) + point_above_drilling, point_above_drilling),
-                                      (Point(-1, 0) + point_above_drilling, drilling_point),
-                                      (Point(1, 0) + point_above_drilling, drilling_point)]
-                for p1,p2 in temp_removed_edges:
+                temp_removed_edges = [(Point(-1, 0) + point_above_drilling, point_above_drilling, get_move_action_by_points(Point(-1, 0) + point_above_drilling, point_above_drilling)),
+                                      (Point(1, 0) + point_above_drilling, point_above_drilling, get_move_action_by_points(Point(1, 0) + point_above_drilling, point_above_drilling)),
+                                      (Point(-1, 0) + point_above_drilling, drilling_point, LoderunnerAction.DRILL_RIGHT),
+                                      (Point(1, 0) + point_above_drilling, drilling_point, LoderunnerAction.DRILL_LEFT)]
+                for p1,p2,_ in temp_removed_edges:
                     self.graph.graph.remove_edge(p1,p2)
                 edges_to_add_back[time_when_to_turn_back].extend(temp_removed_edges)
 

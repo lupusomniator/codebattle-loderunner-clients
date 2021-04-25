@@ -50,5 +50,5 @@ if __name__ == "__main__":
     # local_main()
     # PerfStat.print_stat()
 
-    server_main()
-    # local_main()
+    # server_main()
+    local_main()
