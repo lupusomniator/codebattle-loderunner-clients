@@ -67,7 +67,7 @@ class Ant:
                 break
             chosen_random_pt_to_move = available_pts_to_move[np.random.randint(len(available_pts_to_move))]
             # all edges has only one action (only loop to itself contains 2 possible actions)
-            chosen_action = graph.get_edge_actions(prev_point, chosen_random_pt_to_move)[0]
+            chosen_action = graph.get_edge_actions(cur_point, chosen_random_pt_to_move)[0]
 
             # make step
             depth += 1
