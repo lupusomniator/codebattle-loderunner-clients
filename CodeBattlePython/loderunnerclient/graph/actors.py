@@ -91,6 +91,7 @@ class OtherHero(AbstractActor):
         self.is_on_ladder = is_on_ladder
         self.is_shadowed = is_shadowed
         self.name = "OTHER_HERO"
+        self.reward = -3
 
 
 class Enemy(AbstractActor):
@@ -116,7 +117,7 @@ class Enemy(AbstractActor):
         self.is_on_ladder = is_on_ladder
         self.is_in_pit = is_in_pit
         self.name = "ENEMY"
-
+        self.reward = -10
 
 def is_actor(value: Union[str, Element]):
     if isinstance(value, str):

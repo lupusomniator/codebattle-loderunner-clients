@@ -37,7 +37,7 @@ def server_main():
         # change this url to your
         "https://dojorena.io/codenjoy-contest/board/player/dojorena479?code=8090813955443195874"
     )
-    gcb.run(GreedyAntBot(10).choose_action)
+    gcb.run(GreedyAntBot(30).choose_action)
 
 
 if __name__ == "__main__":
@@ -46,9 +46,9 @@ if __name__ == "__main__":
         # turn(Board.load_from_file("last_board"))
     #main()
     # server_main()
-    
-    local_main()
-    PerfStat.print_stat()
 
-    # server_main()
+    # local_main()
+    # PerfStat.print_stat()
+
+    server_main()
     # local_main()
