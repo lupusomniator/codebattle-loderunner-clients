@@ -124,6 +124,8 @@ def is_available_space(value: Union[str, element.Element, AbstractNode]):
     if isinstance(value, AbstractNode):
         if isinstance(value, EmptySpace) or isinstance(value, Ladder) or isinstance(value, Pipe):
             return True
+        if "PIT_FILL" in value.element.get_name():
+            return True
         return False
     if isinstance(value, str):
         elem = element.Element(value)
