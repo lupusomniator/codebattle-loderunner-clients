@@ -10,32 +10,33 @@ from loderunnerclient.internals.point import Point
 
 from loderunnerclient.graph.entities import is_entity, create_entity
 from loderunnerclient.graph.space import is_space, is_available_space, create_space_element, Direction
-from loderunnerclient.graph.actors import is_actor, create_actor
+from loderunnerclient.graph.actors import is_actor, create_actor, is_dangerous_actor, is_not_dangerous_actor
 from loderunnerclient.graph.di_graph import create_graph_no_edges, fulfill_graph_edges_from_point
 from loderunnerclient.graph.dynamic_action_graph import DynamicActionGraph
 from loderunnerclient.bots.abstract_bot import AbstractBot
 
 
 class Ant:
-    def __init__(self, p: Point, graph: DynamicActionGraph, board: Board,
+    def __init__(self, p: Point, graph: DynamicActionGraph, max_depth,
                  game_emulator=None, initial_transition: Tuple[Point, LoderunnerAction]=None):
         self.start_point: Point = p
         self.graph: DynamicActionGraph = graph
-        self.board: Board = board
+        self.max_depth = max_depth
         self.game_emulator = game_emulator
         self.initial_transition: Tuple[Point, LoderunnerAction] = initial_transition
 
-        self.history: List = []
-        self.path: List[Point] = []
-        self.action_sequence: List[LoderunnerAction] = []  # actions (graph edges)
+        self.history: List = [None] * self.max_depth
+        self.path: List[Point] = [None] * self.max_depth
+        self.action_sequence: List[LoderunnerAction] = [None] * self.max_depth  # actions (graph edges)
 
     #  идти по графу случайным образом на фиксированную глубину (не делая шаг назад)
     #  возвращает список встреченных сущностей
-    def walk(self, max_depth):
+    def walk(self):
         graph = self.graph
         history = self.history
         path = self.path
         action_sequence = self.action_sequence
+        max_depth = self.max_depth
 
         depth = 0
         cur_point = self.start_point
@@ -53,9 +54,11 @@ class Ant:
                 graph.rebuild_graph_in_point(cur_point, max_depth // 2)
             if cur_point != self.start_point:
                 cur_entry = graph.get_node_entry(cur_point)
-                history.append(cur_entry)  # None or Entity or Actor
-                path.append(cur_point)
-                action_sequence.append(prev_action)
+                if is_dangerous_actor(cur_entry) or is_not_dangerous_actor(cur_entry):
+                    break
+                history[depth - 1] = cur_entry  # None or Entity or Actor
+                path[depth - 1] = cur_point
+                action_sequence[depth - 1] = prev_action
 
             #  allowed to go everywhere except going back and going to itself (do_nothing or suicide)
             available_pts_to_move = list(set(graph.graph[cur_point].keys()) - set([prev_point, cur_point]))
