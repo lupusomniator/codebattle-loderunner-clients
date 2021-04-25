@@ -2,10 +2,11 @@ import logging
 from loderunnerclient.game_client import GameClient
 # from loderunnerclient.environment import Environment
 from loderunnerclient.internals.board import Board
+from loderunnerclient.internals.point import Point
 from loderunnerclient.internals.actions import LoderunnerAction
 from loderunnerclient.game import Game
 from loderunnerclient.graph.dynamic_action_graph import DynamicActionGraph
-from loderunnerclient.bots.greedy_ant_bot import Ant
+from loderunnerclient.bots.greedy_ant_bot import Ant, GreedyAntBot
 import numpy as np
 
 
@@ -16,21 +17,27 @@ def turn(board):
 
 def local_main():
     board = Board.load_from_file("last_board")
-    dag = DynamicActionGraph(board, 10)
-    
-    my_pos = board.get_my_position()
-    ant = Ant(my_pos, dag, 10)
+    # dag = DynamicActionGraph(board, 20)
+    #
+    # my_pos = board.get_my_position()
+    # ant = Ant(Point(1,1), dag, 20)
+    #
+    # ant.walk()
+    # print(ant.history)
+    # print(ant.reward)
+    # print(ant.action_sequence)
 
-    ant.walk()
-    print(ant.action_sequence)
+
+    GreedyAntBot(10).choose_action(board)
+
 
 def server_main():
     # env = Environment()
     gcb = GameClient(
         # change this url to your
-        "https://dojorena.io/codenjoy-contest/board/player/dojorena392?code=407418550408423703"
+        "https://dojorena.io/codenjoy-contest/board/player/dojorena479?code=8090813955443195874"
     )
-    # gcb.run(env.on_turn)
+    gcb.run(GreedyAntBot(10).choose_action)
 
 
 if __name__ == "__main__":
@@ -38,5 +45,5 @@ if __name__ == "__main__":
     # for i in range(10000):
         # turn(Board.load_from_file("last_board"))
     #main()
-    # server_main()
-    local_main()
+    server_main()
+    # local_main()
