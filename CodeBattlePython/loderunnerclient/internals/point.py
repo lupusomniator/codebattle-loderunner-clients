@@ -23,6 +23,9 @@ class Point:
     def __hash__(self):
         return hash(self.__key())
 
+    def __add__(self, other):
+        return Point(self._x + other._x, self._y + other._y)
+
     def get_x(self):
         return self._x
 
