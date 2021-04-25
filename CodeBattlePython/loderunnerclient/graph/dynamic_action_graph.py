@@ -90,7 +90,6 @@ class DynamicActionGraph:
             else:
                 self.move_entry(point, point_to)
 
-
     @count_perf
     def update_graph_on_tick(self):
         print("sd")

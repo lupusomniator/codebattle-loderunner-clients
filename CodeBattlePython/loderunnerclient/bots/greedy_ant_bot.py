@@ -64,6 +64,7 @@ class Ant:
                 history[depth - 1] = cur_entry  # None or Entity or Actor
                 if not cur_entry is None:
                     self.reward += cur_entry.get_reward()
+
                 path[depth - 1] = cur_point
                 action_sequence[depth - 1] = prev_action
                 if cur_entry == "PORTAL":
@@ -112,8 +113,6 @@ class GreedyAntBot(AbstractBot):
         ants = []
         for i in range(self.ant_count):
             ants.append(Ant(hero_pos, dag, self.max_depth).walk())
-            print(ants[-1].action_sequence)
-            print(ants[-1].reward)
         rewards = [ant.reward for ant in ants]
 
         best_ant = ants[rewards.index(max(rewards))]

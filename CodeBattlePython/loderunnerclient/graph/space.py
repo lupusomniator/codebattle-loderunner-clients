@@ -33,6 +33,9 @@ class AbstractNode:
         self.element = elem
         self.available_moves: np.ndarray = np.array([])
 
+    def get_reward(self):
+        return 0
+
 
 class EmptySpace(AbstractNode):
     states = dict(
@@ -80,6 +83,12 @@ class Brick(AbstractNode):
         assert 1 <= stage <= 4
         self.element = element.Element("PIT_FILL_" + str(5-stage))
 
+    def get_reward(self):
+        if "PIT_FILL" in self.element.get_name():
+            return -1
+        else:
+            return 0
+
 
 class Ladder(AbstractNode):
     states = dict(
@@ -123,6 +132,8 @@ def is_space(value: Union[str, element.Element]):
 def is_available_space(value: Union[str, element.Element, AbstractNode]):
     if isinstance(value, AbstractNode):
         if isinstance(value, EmptySpace) or isinstance(value, Ladder) or isinstance(value, Pipe):
+            return True
+        if "PIT_FILL" in value.element.get_name():
             return True
         return False
     if isinstance(value, str):

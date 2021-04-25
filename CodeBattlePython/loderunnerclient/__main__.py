@@ -46,7 +46,7 @@ if __name__ == "__main__":
         # turn(Board.load_from_file("last_board"))
     #main()
     # server_main()
-    
+
     local_main()
     PerfStat.print_stat()
 

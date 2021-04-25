@@ -16,8 +16,12 @@ board = Board(board_str)
 
 
 graph, hero_point, timers = create_graph_no_edges(board)
-p = Point(42, 33)
+p = Point(19, 12)
 # add edges in graph around the hero in range of max_depth
 graph, met_objects, report = fulfill_graph_edges_from_point(graph, board,
-                                            p, max_depth=21)
+                                            p, max_depth=21, verbose=True)
+
+p_check = p
+print(f"edges for {p_check}")
+[print(k,v) for k,v in graph[p_check].items()]
 print(report)

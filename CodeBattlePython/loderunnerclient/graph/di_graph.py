@@ -139,7 +139,9 @@ def fulfill_graph_edges_from_point(graph: nx.DiGraph, board: Board, start_point:
         graph.nodes[cur_point][NodeProps.build] = True
 
         space_down = graph.nodes[Point(*(cur_coords + Direction.down))][NodeProps.space]
-        is_on_air = space_down.name == "NONE" or "PIT_FILL" in space_down.element.get_name()
+        is_on_air = (space_down.name == "NONE" or "PIT_FILL" in space_down.element.get_name()) \
+                    and cur_space.name != "PIPE" \
+                    and cur_space.name != "LADDER"
 
         if verbose:
             print(f"Chosen moves for cur_point {get_ij(cur_point)}:")
@@ -183,22 +185,38 @@ def fulfill_graph_edges_from_point(graph: nx.DiGraph, board: Board, start_point:
 
         # create action edges for drilling
         # left drilling
-        left_is_empty = graph.nodes[Point(*(cur_coords + Direction.left))][NodeProps.space] == "NONE" and \
+        left_is_empty = graph.nodes[Point(*(cur_coords + Direction.left))][NodeProps.space].element.get_name() == "NONE" and \
                         graph.nodes[Point(*(cur_coords + Direction.left))][NodeProps.entry] is None
         left_down_direction = Direction.left + Direction.down
         left_down_point = Point(*(cur_coords + left_down_direction))
         left_down_is_break = graph.nodes[left_down_point][NodeProps.space].element.get_name() == "BRICK"
-        if left_is_empty and left_down_is_break:
-            graph.add_edge(cur_point, left_down_point, **{EdgeProps.actions: [LoderunnerAction.DRILL_LEFT]})
+        if left_is_empty and left_down_is_break and not is_on_air:
+            pass
+            # graph.add_edge(cur_point, left_down_point, **{EdgeProps.actions: [LoderunnerAction.DRILL_LEFT]})
         # right drilling
-        right_is_empty = graph.nodes[Point(*(cur_coords + Direction.right))][NodeProps.space] == "NONE" and \
+        right_is_empty = graph.nodes[Point(*(cur_coords + Direction.right))][NodeProps.space].element.get_name() == "NONE" and \
                         graph.nodes[Point(*(cur_coords + Direction.right))][NodeProps.entry] is None
         right_down_direction = Direction.right + Direction.down
         right_down_point = Point(*(cur_coords + right_down_direction))
         right_down_is_break = graph.nodes[right_down_point][NodeProps.space].element.get_name() == "BRICK"
-        if right_is_empty and right_down_is_break:
-            # graph.add_edge(cur_point, right_down_point, **{EdgeProps.actions: [LoderunnerAction.DRILL_RIGHT]})
+        if right_is_empty and right_down_is_break and not is_on_air:
             pass
+            # graph.add_edge(cur_point, right_down_point, **{EdgeProps.actions: [LoderunnerAction.DRILL_RIGHT]})
+        if verbose:
+            if cur_point == Point(19, 12):
+                print("Checking drilling")
+                print("CUR SPACE", cur_space)
+                print("SPACE DOWN IS NONE", space_down.name == "NONE")
+                print("SPACE DOWN IS NONE", space_down.name == "BRICK")
+                print("IS ON AIR", is_on_air)
+                print("CANT GO DOWN", not is_on_air and not (space_down.name == "PIPE" or space_down.name == "LADDER") and \
+                    np.all(cur_space.available_moves[i] == Direction.down))
+                print(left_is_empty, Point(*(cur_coords + Direction.left)), graph.nodes[Point(*(cur_coords + Direction.left))][NodeProps.space])
+                print(left_down_point)
+                print(left_down_point)
+                print(left_down_is_break)
+                print(left_is_empty and left_down_is_break)
+                break
 
     report = dict()
     for object_name, points in met_objects.items():
@@ -213,7 +231,7 @@ def main():
     board_str = open("./resource/board_example", "r").read()
     board = Board(board_str)
     print(board.get_size())
-    graph, sp = create_graph_no_edges(board)
+    graph, sp, timers = create_graph_no_edges(board)
 
     print(len(graph.nodes()))
 
