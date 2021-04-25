@@ -5,6 +5,7 @@ import traceback
 class PerfStat:
     PERF_SUM_VALUE_CACHE = defaultdict(int)
     PERF_COUNT_GLOBAL_CACHE = Counter()
+    PERF_LAST_GLOBAL_CACHE = Counter()
 
     def __init__(self, name):
         self.name = name
@@ -21,6 +22,7 @@ class PerfStat:
 
         PerfStat.PERF_SUM_VALUE_CACHE[self.name] += elapsed
         PerfStat.PERF_COUNT_GLOBAL_CACHE[self.name] += 1
+        PerfStat.PERF_LAST_GLOBAL_CACHE[self.name] = elapsed
 
     @staticmethod
     def print_stat():
@@ -28,6 +30,7 @@ class PerfStat:
             print(key)
             print("    total=", PerfStat.PERF_SUM_VALUE_CACHE[key])
             print("    mean=", PerfStat.PERF_SUM_VALUE_CACHE[key] / PerfStat.PERF_COUNT_GLOBAL_CACHE[key])
+            print("    last=", PerfStat.PERF_LAST_GLOBAL_CACHE[key])
             
 
 def count_perf(func):

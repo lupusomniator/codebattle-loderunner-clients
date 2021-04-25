@@ -8,6 +8,10 @@ from typing import Iterable, Union, Optional, Tuple
 class AbstractActor:
     def __init__(self, element: Element):
         self.element = element
+        self.reward = 0
+    
+    def get_reward(self):
+        return self.reward
 
 
 class Hero(AbstractActor):
@@ -92,6 +96,8 @@ class OtherHero(AbstractActor):
         self.is_shadowed = is_shadowed
         self.name = "OTHER_HERO"
 
+    def get_reward(self):
+        return -1 if self.is_shadowed else 0
 
 class Enemy(AbstractActor):
     states = dict(
@@ -116,6 +122,7 @@ class Enemy(AbstractActor):
         self.is_on_ladder = is_on_ladder
         self.is_in_pit = is_in_pit
         self.name = "ENEMY"
+        self.reward = -1
 
 
 def is_actor(value: Union[str, Element]):

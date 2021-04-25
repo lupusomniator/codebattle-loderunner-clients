@@ -1,4 +1,4 @@
-from loderunnerclient.util import count_perf
+from loderunnerclient.util import count_perf, PerfStat
 from typing import Iterable, Union, Optional, Tuple, Any, List, Dict, DefaultDict, Set
 from collections import defaultdict
 import numpy as np
@@ -56,19 +56,20 @@ class Ant:
             prev_action = initial_action
 
         while depth <= max_depth:
+            print(cur_point, graph.get_node_entry(cur_point))
             if graph.get_node_is_build(cur_point) is False:
                 graph.rebuild_graph_in_point(cur_point, max_depth // 2)
             if cur_point != self.start_point:
                 cur_entry = graph.get_node_entry(cur_point)
-                if is_dangerous_actor(cur_entry) or is_not_dangerous_actor(cur_entry):
-                    break
                 history[depth - 1] = cur_entry  # None or Entity or Actor
-                try:
-                    self.reward += cur_entry.reward
-                except AttributeError:
-                    pass
+                if not cur_entry is None:
+                    self.reward += cur_entry.get_reward()
                 path[depth - 1] = cur_point
                 action_sequence[depth - 1] = prev_action
+                if cur_entry == "PORTAL":
+                    break
+                if is_dangerous_actor(cur_entry) or is_not_dangerous_actor(cur_entry):
+                    break
 
             #  allowed to go everywhere except going back and going to itself (do_nothing or suicide)
             available_pts_to_move = list(set(graph.graph[cur_point].keys()) - set([prev_point, cur_point]))
@@ -80,7 +81,8 @@ class Ant:
             # all edges has only one action (only loop to itself contains 2 possible actions)
 
             chosen_action = graph.get_edge_actions(cur_point, chosen_random_pt_to_move)[0]
-
+            if chosen_action is None:
+                break
 
             # make step
             depth += 1
@@ -92,14 +94,16 @@ class Ant:
 
 
 class GreedyAntBot(AbstractBot):
-    def __init__(self, ant_count=20, max_depth=20):
+    def __init__(self, ant_count=20, max_depth=20, print_stat=True):
         super().__init__()
         self.board = None
         self.graph = None
         self.ant_count = ant_count
         self.max_depth = max_depth
-
+    
+    @count_perf
     def choose_action(self, board: Board) -> LoderunnerAction:
+        PerfStat.print_stat()
         # return LoderunnerAction.SUICIDE
         hero_pos = board.get_my_position()
 
@@ -108,7 +112,8 @@ class GreedyAntBot(AbstractBot):
         ants = []
         for i in range(self.ant_count):
             ants.append(Ant(hero_pos, dag, self.max_depth).walk())
-
+            print(ants[-1].action_sequence)
+            print(ants[-1].reward)
         rewards = [ant.reward for ant in ants]
 
         best_ant = ants[rewards.index(max(rewards))]

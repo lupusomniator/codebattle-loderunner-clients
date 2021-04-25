@@ -8,7 +8,7 @@ from loderunnerclient.game import Game
 from loderunnerclient.graph.dynamic_action_graph import DynamicActionGraph
 from loderunnerclient.bots.greedy_ant_bot import Ant, GreedyAntBot
 import numpy as np
-from loderunnerclient.util import PerfStat
+from loderunnerclient.util import PerfStat, count_perf
 
 
 logging.basicConfig(format="%(asctime)s %(levelname)s:%(message)s", level=logging.INFO)
@@ -16,6 +16,7 @@ logging.basicConfig(format="%(asctime)s %(levelname)s:%(message)s", level=loggin
 def turn(board):
     board.save_to_file("last_board")
 
+@count_perf
 def local_main():
     board = Board.load_from_file("last_board")
     # dag = DynamicActionGraph(board, 20)
@@ -28,8 +29,7 @@ def local_main():
     # print(ant.reward)
     # print(ant.action_sequence)
 
-
-    GreedyAntBot(10).choose_action(board)
+    GreedyAntBot(2, 20, False).choose_action(board)
 
 def server_main():
     # env = Environment()
@@ -37,7 +37,7 @@ def server_main():
         # change this url to your
         "https://dojorena.io/codenjoy-contest/board/player/dojorena392?code=407418550408423703"
     )
-    gcb.run(GreedyAntBot(10).choose_action)
+    gcb.run(GreedyAntBot(1000, 30).choose_action)
 
 
 if __name__ == "__main__":

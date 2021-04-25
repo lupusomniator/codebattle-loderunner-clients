@@ -14,6 +14,10 @@ _ENTITY_ELEMENTS = dict(
 class AbstractEntity:
     def __init__(self, element: Element):
         self.element = element
+        self.reward = -0.1
+
+    def get_reward(self):
+        return self.reward
 
 
 class GoldGreen(AbstractEntity):
@@ -67,6 +71,7 @@ class Portal(AbstractEntity):
     def __init__(self, *args):
         super().__init__(*args)
         self.name = "PORTAL"
+        self.reward = 0.5
 
 
 def is_entity(value: Union[str, Element]):
