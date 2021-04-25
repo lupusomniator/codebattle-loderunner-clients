@@ -74,6 +74,8 @@ class DynamicActionGraph:
             self.timers[point_target] = timer
 
 
+
+
     def update_graph_on_tick(self):
         exceeded_timers = self.update_timers()
         # for new pits remove edges to the node above
