@@ -11,9 +11,9 @@ from loderunnerclient.internals.actions import LoderunnerAction
 from loderunnerclient.internals.point import Point
 
 from loderunnerclient.graph.entities import is_entity, create_entity
-from loderunnerclient.graph.space import is_space, is_available_space, create_space_element, Direction
+from loderunnerclient.graph.space import is_space, is_available_space, create_space_element, Direction, EmptySpace
 from loderunnerclient.graph.actors import is_actor, create_actor, is_dangerous_actor, is_not_dangerous_actor
-from loderunnerclient.graph.di_graph import create_graph_no_edges, fulfill_graph_edges_from_point
+from loderunnerclient.graph.di_graph import create_graph_no_edges, fulfill_graph_edges_from_point, add_move_edges
 from loderunnerclient.graph.dynamic_action_graph import DynamicActionGraph
 from loderunnerclient.bots.abstract_bot import AbstractBot
 
@@ -31,7 +31,8 @@ class Ant:
 
         self.history: List = [None] * self.max_depth
         self.path: List[Point] = [None] * self.max_depth
-        self.action_sequence: List[LoderunnerAction] = [None] * self.max_depth  # actions (graph edges)
+        self.action_sequence: List[LoderunnerAction] = [
+                                                           None] * self.max_depth  # actions (graph edges)
 
         self.reward = 0
 
@@ -59,7 +60,13 @@ class Ant:
             prev_point = self.start_point
             prev_action = initial_action
 
+        edges_to_remove_back = defaultdict(list)  # key = depth (tick) when to remove edges, val = list of edges
+        edges_to_add_back = defaultdict(list)  # key = depth (tick) when to add edges, val = list of edges
         while depth <= max_depth:
+            for p1, p2 in edges_to_remove_back[depth]:
+                self.graph.graph.remove_edge(p1,p2)
+            for p1, p2 in edges_to_add_back[depth]:
+                self.graph.graph.add_edge(p1,p2)
             if graph.get_node_is_build(cur_point) is False:
                 graph.rebuild_graph_in_point(cur_point, max_depth // 2)
             if cur_point != self.start_point:
@@ -76,21 +83,49 @@ class Ant:
                     break
 
             #  allowed to go everywhere except going back and going to itself (do_nothing or suicide)
-            available_pts_to_move = list(set(graph.graph[cur_point].keys()) - set([prev_point, cur_point]))
+            available_pts_to_move = list(
+                set(graph.graph[cur_point].keys()) - set([prev_point, cur_point]))
             if len(available_pts_to_move) == 0:
                 #  jumped in the gap or something
                 break
-            chosen_random_pt_to_move = available_pts_to_move[np.random.randint(len(available_pts_to_move))]
+            chosen_random_pt_to_move = available_pts_to_move[
+                np.random.randint(len(available_pts_to_move))]
 
             # all edges has only one action (only loop to itself contains 2 possible actions)
 
             chosen_action = graph.get_edge_actions(cur_point, chosen_random_pt_to_move)[0]
 
             # make step
-            depth += 1
-            prev_point = cur_point
-            cur_point = chosen_random_pt_to_move
+            if chosen_action in [LoderunnerAction.DRILL_LEFT, LoderunnerAction.DRILL_RIGHT]:
+                # temporary add edges in graoh
+                drilling_point = chosen_random_pt_to_move
+                point_above_drilling = Point(*(drilling_point.coords() + Direction.up))
+                pit_life_length = 3
+                time_when_to_turn_back = depth + pit_life_length
+                edges_to_remove_back[time_when_to_turn_back].extend(
+                    add_move_edges(self.graph.graph, self.graph.initial_board,
+                                   drilling_point, False,
+                                   mock_space=EmptySpace(Element("NONE"))))
+                temp_added_edges = [(point_above_drilling, Point(0,1) + point_above_drilling)]
+                for p1,p2 in temp_added_edges:
+                    self.graph.graph.add_edge(p1,p2)
+                edges_to_remove_back[time_when_to_turn_back].extend(temp_added_edges)
+
+                temp_removed_edges = [(Point(-1, 0) + point_above_drilling, point_above_drilling),
+                                      (Point(1, 0) + point_above_drilling, point_above_drilling),
+                                      (Point(-1, 0) + point_above_drilling, drilling_point),
+                                      (Point(1, 0) + point_above_drilling, drilling_point)]
+                for p1,p2 in temp_removed_edges:
+                    self.graph.graph.remove_edge(p1,p2)
+                edges_to_add_back[time_when_to_turn_back].extend(temp_removed_edges)
+
+
+            if chosen_action in [LoderunnerAction.GO_LEFT, LoderunnerAction.GO_RIGHT, LoderunnerAction.GO_DOWN, LoderunnerAction.GO_UP]:
+                prev_point = cur_point
+                cur_point = chosen_random_pt_to_move
+
             prev_action = chosen_action
+            depth += 1
 
         for i, a in enumerate(action_sequence):
             if a is None:
