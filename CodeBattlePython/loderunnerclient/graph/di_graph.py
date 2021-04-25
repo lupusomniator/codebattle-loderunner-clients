@@ -192,7 +192,8 @@ def fulfill_graph_edges_from_point(graph: nx.DiGraph, board: Board, start_point:
         left_down_point = Point(*(cur_coords + left_down_direction))
         left_down_is_break = graph.nodes[left_down_point][NodeProps.space].element.get_name() == "BRICK"
         if left_is_empty and left_down_is_break and not is_on_air:
-            graph.add_edge(cur_point, left_down_point, **{EdgeProps.actions: [LoderunnerAction.DRILL_LEFT]})
+            pass
+            # graph.add_edge(cur_point, left_down_point, **{EdgeProps.actions: [LoderunnerAction.DRILL_LEFT]})
         # right drilling
         right_is_empty = graph.nodes[Point(*(cur_coords + Direction.right))][NodeProps.space].element.get_name() == "NONE" and \
                         graph.nodes[Point(*(cur_coords + Direction.right))][NodeProps.entry] is None
@@ -200,7 +201,8 @@ def fulfill_graph_edges_from_point(graph: nx.DiGraph, board: Board, start_point:
         right_down_point = Point(*(cur_coords + right_down_direction))
         right_down_is_break = graph.nodes[right_down_point][NodeProps.space].element.get_name() == "BRICK"
         if right_is_empty and right_down_is_break and not is_on_air:
-            graph.add_edge(cur_point, right_down_point, **{EdgeProps.actions: [LoderunnerAction.DRILL_RIGHT]})
+            pass
+            # graph.add_edge(cur_point, right_down_point, **{EdgeProps.actions: [LoderunnerAction.DRILL_RIGHT]})
         # if verbose:
         #     if cur_point == Point(18,29):
         #         print(f"Checking point {cur_point}")
