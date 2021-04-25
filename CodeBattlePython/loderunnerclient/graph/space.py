@@ -2,7 +2,7 @@ import numpy as np
 import loderunnerclient.internals.element as element
 from typing import Iterable, Union, Optional, Tuple
 
-all_elements = element._ELEMENTS
+# all_elements = element._ELEMENTS
 
 _SPACE_ELEMENTS = dict(
     NONE=" ",
@@ -72,6 +72,13 @@ class Brick(AbstractNode):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = "BRICK"
+
+    def set_drilling(self):
+        self.element = element.Element("DRILL_PIT")
+
+    def set_fill(self, stage):
+        assert 1 <= stage <= 4
+        self.element = element.Element("PIT_FILL_" + str(5-stage))
 
 
 class Ladder(AbstractNode):

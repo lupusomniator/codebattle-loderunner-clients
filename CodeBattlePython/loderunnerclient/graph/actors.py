@@ -127,6 +127,18 @@ def is_actor(value: Union[str, Element]):
     return name in Hero.states or name in OtherHero.states or name in Enemy.states
 
 
+def is_dangerous_actor(actor: AbstractActor):
+    if isinstance(actor, Enemy):
+        return True
+    if isinstance(actor, OtherHero) and actor.is_shadowed:
+        return True
+    return False
+
+
+def is_not_dangerous_actor(actor: AbstractActor):
+    return isinstance(actor, OtherHero) and not actor.is_shadowed
+
+
 def create_actor(value: Union[str, Element]):
     if isinstance(value, str):
         elem = Element(value)
