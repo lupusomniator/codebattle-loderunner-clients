@@ -63,10 +63,17 @@ class Ant:
                 if is_dangerous_actor(cur_entry) or is_not_dangerous_actor(cur_entry):
                     break
                 history[depth - 1] = cur_entry  # None or Entity or Actor
+
+                # награды
+                if "PIT_FILL" in graph.get_node_space(cur_point).element.get_name():
+                    self.reward -= 10
+                    
                 try:
                     self.reward += cur_entry.reward
                 except AttributeError:
                     pass
+                # награды
+
                 path[depth - 1] = cur_point
                 action_sequence[depth - 1] = prev_action
 
