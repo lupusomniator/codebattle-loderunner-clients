@@ -47,8 +47,8 @@ if __name__ == "__main__":
     #main()
     # server_main()
     
-    # local_main()
-    # PerfStat.print_stat()
+    local_main()
+    PerfStat.print_stat()
 
-    server_main()
+    # server_main()
     # local_main()

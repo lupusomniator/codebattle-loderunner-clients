@@ -3,7 +3,7 @@ from typing import Iterable, Union, Optional, Tuple, Any, List, Dict, DefaultDic
 from collections import defaultdict
 import numpy as np
 import networkx as nx
-
+from copy import copy, deepcopy
 from loderunnerclient.internals.element import Element
 from loderunnerclient.internals.board import Board
 from loderunnerclient.internals.actions import LoderunnerAction
@@ -18,10 +18,12 @@ from loderunnerclient.bots.abstract_bot import AbstractBot
 
 
 class Ant:
+    @count_perf
     def __init__(self, p: Point, graph: DynamicActionGraph, max_depth,
                  game_emulator=None, initial_transition: Tuple[Point, LoderunnerAction] = None):
         self.start_point: Point = p
-        self.graph: DynamicActionGraph = graph
+        self.graph: DynamicActionGraph = copy(graph)
+        graph.graph = nx.DiGraph(graph.graph)
         self.max_depth = max_depth
         self.game_emulator = game_emulator
         self.initial_transition: Tuple[Point, LoderunnerAction] = initial_transition

@@ -27,7 +27,6 @@ from loderunnerclient.graph.di_graph import \
 
 
 class DynamicActionGraph:
-    @count_perf
     def __init__(self, board, max_depth=20):
         self.initial_board = board
         self.max_depth = max_depth
@@ -37,7 +36,7 @@ class DynamicActionGraph:
         self.timers = res[2]
         # add edges in graph around the hero in range of max_depth
         self.rebuild_graph_in_point(self.hero_point, max_depth=self.max_depth)
-        
+
     @count_perf
     def rebuild_graph_in_point(self, p: Point, max_depth):
         return fulfill_graph_edges_from_point(self.graph, self.initial_board, p, max_depth, clone=False)
