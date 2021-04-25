@@ -79,11 +79,7 @@ class DynamicActionGraph:
             timer = check_get_timer(self.get_node_space(point_target).element)
             assert timer is not None
             self.timers[point_target] = timer
-<<<<<<< Updated upstream
 
-
-    @count_perf
-=======
         if action in [LoderunnerAction.GO_UP,
                       LoderunnerAction.GO_RIGHT,
                       LoderunnerAction.GO_LEFT,
@@ -95,7 +91,7 @@ class DynamicActionGraph:
                 self.move_entry(point, point_to)
 
 
->>>>>>> Stashed changes
+    @count_perf
     def update_graph_on_tick(self):
         print("sd")
         exceeded_timers = self.update_timers()
@@ -177,16 +173,14 @@ class DynamicActionGraph:
     def set_node_entry(self, p: Point, val):
         self.graph.nodes[p][NodeProps.entry] = val
 
-<<<<<<< Updated upstream
     @count_perf
-=======
     def move_entry(self, p_from: Point, p_to: Point):
         entry = self.get_node_entry(p_from)
         assert entry is not None, "Tried to move entry from point with no entry"
         self.set_node_entry(p_from, None)
         self.set_node_entry(p_to, entry)
 
->>>>>>> Stashed changes
+    @count_perf
     def set_node_unbuild(self, p: Point):
         self.graph.nodes[p][NodeProps.build] = False
 
@@ -194,9 +188,7 @@ class DynamicActionGraph:
     def get_node_is_build(self, p: Point):
         return self.graph.nodes[p][NodeProps.build]
 
-<<<<<<< Updated upstream
     @count_perf
-=======
     def get_node_secondary_bot(self, p: Point):
         return self.graph.nodes[p][NodeProps.bot]
 
@@ -209,13 +201,9 @@ class DynamicActionGraph:
         self.set_node_secondary_bot(p_from, None)
         self.set_node_secondary_bot(p_to, bot)
 
->>>>>>> Stashed changes
+    @count_perf
     def get_edge_actions(self, p1: Point, p2: Point):
         return self.graph.get_edge_data(p1, p2)[EdgeProps.actions]
-
-
-    # # def get_action_transitions(self, p: Point):
-    #     pass
 
     @count_perf
     def silent_remove_edge(self, node_tuple):
@@ -228,9 +216,9 @@ class DynamicActionGraph:
         return self.graph[item]
 
 
-
 def main():
     raise Exception("Cant be launched as main")
+
 
 if __name__ == "__main__":
     main()
