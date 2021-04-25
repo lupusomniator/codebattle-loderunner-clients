@@ -134,7 +134,9 @@ def is_dangerous_actor(actor: AbstractActor):
         return True
     return False
 
-def is_not_dangerous_actor
+
+def is_not_dangerous_actor(actor: AbstractActor):
+    return isinstance(actor, OtherHero) and not actor.is_shadowed
 
 
 def create_actor(value: Union[str, Element]):

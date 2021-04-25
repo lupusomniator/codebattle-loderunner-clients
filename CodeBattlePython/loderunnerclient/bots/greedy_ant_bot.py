@@ -24,6 +24,7 @@ class Ant:
         self.board: Board = board
         self.game_emulator = game_emulator
         self.initial_transition: Tuple[Point, LoderunnerAction] = initial_transition
+
         self.history: List = []
         self.path: List[Point] = []
         self.action_sequence: List[LoderunnerAction] = []  # actions (graph edges)
@@ -49,13 +50,12 @@ class Ant:
 
         while depth <= max_depth:
             if graph.graph[cur_point]["builded"] is False:
-                graph.rebuild_graph_in_point(cur_point, max_depth + 1)
+                graph.rebuild_graph_in_point(cur_point, max_depth // 2)
             if cur_point != self.start_point:
                 cur_entry = graph.get_node_entry(cur_point)
-                history.append()  # None or Entity or Actor
+                history.append(cur_entry)  # None or Entity or Actor
                 path.append(cur_point)
                 action_sequence.append(prev_action)
-
 
             #  allowed to go everywhere except going back and going to itself (do_nothing or suicide)
             available_pts_to_move = list(set(graph.graph[cur_point].keys()) - set([prev_point, cur_point]))
