@@ -169,8 +169,9 @@ class DynamicActionGraph:
         return self.graph.nodes[p][NodeProps.build]
 
     @count_perf
-    def get_edge_actions(self, points: Tuple[Point, Point]):
-        return self.graph.get_edge_data(*points)[EdgeProps.actions]
+    def get_edge_actions(self, p1: Point, p2: Point):
+        return self.graph.get_edge_data(p1, p2)[EdgeProps.actions]
+
 
     # # def get_action_transitions(self, p: Point):
     #     pass
