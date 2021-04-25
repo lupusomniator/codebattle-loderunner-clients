@@ -200,21 +200,21 @@ def fulfill_graph_edges_from_point(graph: nx.DiGraph, board: Board, start_point:
         right_down_is_break = graph.nodes[right_down_point][NodeProps.space].element.get_name() == "BRICK"
         if right_is_empty and right_down_is_break and not is_on_air:
             graph.add_edge(cur_point, right_down_point, **{EdgeProps.actions: [LoderunnerAction.DRILL_RIGHT]})
-        if verbose:
-            if cur_point == Point(19, 12):
-                print("Checking drilling")
-                print("CUR SPACE", cur_space)
-                print("SPACE DOWN IS NONE", space_down.name == "NONE")
-                print("SPACE DOWN IS NONE", space_down.name == "BRICK")
-                print("IS ON AIR", is_on_air)
-                print("CANT GO DOWN", not is_on_air and not (space_down.name == "PIPE" or space_down.name == "LADDER") and \
-                    np.all(cur_space.available_moves[i] == Direction.down))
-                print(left_is_empty, Point(*(cur_coords + Direction.left)), graph.nodes[Point(*(cur_coords + Direction.left))][NodeProps.space])
-                print(left_down_point)
-                print(left_down_point)
-                print(left_down_is_break)
-                print(left_is_empty and left_down_is_break)
-                break
+        # if verbose:
+        #     if cur_point == Point(19, 12):
+        #         print("Checking drilling")
+        #         print("CUR SPACE", cur_space)
+        #         print("SPACE DOWN IS NONE", space_down.name == "NONE")
+        #         print("SPACE DOWN IS NONE", space_down.name == "BRICK")
+        #         print("IS ON AIR", is_on_air)
+        #         print("CANT GO DOWN", not is_on_air and not (space_down.name == "PIPE" or space_down.name == "LADDER") and \
+        #             np.all(cur_space.available_moves[i] == Direction.down))
+        #         print(left_is_empty, Point(*(cur_coords + Direction.left)), graph.nodes[Point(*(cur_coords + Direction.left))][NodeProps.space])
+        #         print(left_down_point)
+        #         print(left_down_point)
+        #         print(left_down_is_break)
+        #         print(left_is_empty and left_down_is_break)
+        #         break
 
     report = dict()
     for object_name, points in met_objects.items():
