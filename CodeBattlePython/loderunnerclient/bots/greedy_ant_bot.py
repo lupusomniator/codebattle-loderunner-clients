@@ -50,7 +50,7 @@ class Ant:
             prev_action = initial_action
 
         while depth <= max_depth:
-            if graph.graph[cur_point]["builded"] is False:
+            if graph.get_node_is_build(cur_point) is False:
                 graph.rebuild_graph_in_point(cur_point, max_depth // 2)
             if cur_point != self.start_point:
                 cur_entry = graph.get_node_entry(cur_point)

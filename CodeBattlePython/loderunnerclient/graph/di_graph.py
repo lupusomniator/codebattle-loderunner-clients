@@ -28,6 +28,7 @@ class NodeProps:
     entry = "entry"
     build = "build"
 
+
 class EdgeProps:
     actions = "actions"
 
