@@ -15,6 +15,7 @@ class Board:
         self._size = int(sqrt(self._len))  # size of the board
         # print("Board size is sqrt", self._len, self._size)
 
+
     def _find_all(self, element: Element):
         """ Returns the list of points for the given element type."""
         _points = []
@@ -25,7 +26,7 @@ class Board:
         return _points        
 
     def get_index_table(self, indent):
-        table = np.zeros((self._size + indent[0] * 2, self._size + indent[1] * 2)) + ord("!")
+        table = np.zeros((self._size + indent[0] * 2, self._size + indent[1] * 2)) + 13
         assert self._size * self._size == len(list(self._string)), (self._size * self._size, len(list(self._string)))
             
         for i, c in enumerate(self._string):

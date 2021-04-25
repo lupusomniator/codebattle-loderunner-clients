@@ -2,8 +2,9 @@ import logging
 from loderunnerclient.game_client import GameClient
 from loderunnerclient.environment import Environment
 from loderunnerclient.internals.board import Board
+from loderunnerclient.internals.actions import LoderunnerAction
 from loderunnerclient.game import Game
-
+import numpy as np
 
 
 logging.basicConfig(format="%(asctime)s %(levelname)s:%(message)s", level=logging.INFO)
@@ -19,18 +20,10 @@ def server_main():
     )
     gcb.run(env.on_turn)
 
-def local_main():
-    env = Environment()
-    board = Board.load_from_file("last_board")
-    game = Game(board)
-    reward = 0
-    while True:
-        action = env.on_turn(Board(game.to_string_board()), reward)
-        reward = game.apply_to_main_hero(action)
 
 if __name__ == "__main__":
     # Board.load_from_file("last_board")
     # for i in range(10000):
         # turn(Board.load_from_file("last_board"))
     #main()
-    local_main()
+    server_main()

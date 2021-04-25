@@ -103,12 +103,10 @@ class Brick:
 
 
 class Player:
-    TRANSPARENT_INDEX = 0
     TICKS_TILL_SHADOW_EFFECT_ENDS = 5
 
-    def __init__(self, element, score=Score()):
-        self.id = Player.TRANSPARENT_INDEX
-        Player.TRANSPARENT_INDEX += 1
+    def __init__(self, element, id, score=Score()):
+        self.id = id
         self.element = element
         self.score = score
 
@@ -138,33 +136,51 @@ class Game:
         self.enemies_positions[old_point] -= 1
         self.enemies_positions[new_point] += 1
 
-    def __init__(self, board):
+    def __init__(self, board, static_board=None):
+        import time
         self.cur_max_index = 0
+        self.players_id = 0
 
+        start = time.time()
         self.mutable_board = board.get_elements_board(static_only=False)
-        self.static_board = board.get_elements_board(static_only=True)
+        print("Mutuble loading", time.time() - start)
+        start = time.time()
+        if static_board is None:
+            self.static_board = board.get_elements_board(static_only=True)
+        else:
+            self.static_board = static_board
+        print("Static loading", time.time() - start)
 
         self.bricks_table = dict()
         self.enemies_table = defaultdict(int)
         self.players_table = dict()
         self.players_index_to_point = dict()
-
+        start = time.time()
         brick_positions = set(board.get_brick_positions())
         for point in brick_positions:
             rev_point = Point(point.get_y(), point.get_x())
             self.bricks_table[rev_point] = Brick(self.static_board[rev_point.get_x()][rev_point.get_y()])
 
+        print("Bricks loading", time.time() - start)
+        start = time.time()
         enemies_positions = set(board.get_enemy_positions())
         for point in enemies_positions:
             rev_point = Point(point.get_y(), point.get_x())
             self.enemies_table[rev_point] = self.enemies_table[rev_point] + 1
+        print("Enemies loading", time.time() - start)
 
+        start = time.time()
         heroes_positions = [board.get_my_position()]
         heroes_positions.extend(list(board.get_other_hero_positions()))
         for point in heroes_positions:
             rev_point = Point(point.get_y(), point.get_x())
-            self.players_table[rev_point] = Player(self.mutable_board[rev_point.get_y()][rev_point.get_x()])
+            self.players_table[rev_point] = Player(
+                self.mutable_board[rev_point.get_y()][rev_point.get_x()],
+                self.players_id
+            )
             self.players_index_to_point[self.players_table[rev_point].id] = rev_point
+            self.players_id += 1
+        print("Heroes loading", time.time() - start)
 
     def find_all_heroes(self):
         heroes = []
@@ -278,7 +294,7 @@ class Game:
                             else:
                                 owner.reward(RewardType.KILL)
                             rx, ry = get_random_empty_position(self.mutable_board)
-                            print("New hero pos:", rx, ry)
+                            # print("New hero pos:", rx, ry)
                             self.update_player_position(change[0], Point(rx, ry))
                             self.mutable_board[rx][ry] = Element(ElementActionHandler.get_prefix(old_el) + 'RIGHT')
                         else:
@@ -447,12 +463,14 @@ class Game:
                 print_table(self.mutable_board)
                 print("=" * 30)
 
-    def apply_to_main_hero(self, action):
-        self.do_tick([(self.players_index_to_point[0], action)])
+    def apply_to_main_hero(self, actions):
+        for action in actions:
+            self.do_tick([(self.players_index_to_point[0], action)])
         return self.players_table[self.players_index_to_point[0]].score.score
 
     def to_string_board(self):
         return "".join(el.get_char() for el in chain(*self.mutable_board))
+    
 
 if __name__ == "__main__":
     board = Board.load_from_file("last_board")

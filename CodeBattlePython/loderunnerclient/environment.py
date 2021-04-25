@@ -73,7 +73,7 @@ class Environment:
         self.boards = []
         self.actions = []
         self.agent = Agent(
-            13,
+            14,
             len(LoderunnerAction) - 3,
             self.policy_kl_range,
             self.policy_params,
@@ -216,7 +216,7 @@ class Environment:
 
         # Вычисляем состояние, которое нейронная сможет скушать
         state = self.__get_current_nn_state__()
-        state = to_categorical(state, num_classes=13)
+        state = to_categorical(state, num_classes=14)
         # Сейчас в next_state находится чанк размера (1, 53, self.window_size[0], self.window_size[1])
         # 53 - это количество возможных полей в игре
 
@@ -244,7 +244,7 @@ class Environment:
         self.last_state = state
         return get_action_by_num(int(self.agent.act(state)))
     
-    def on_turn(self, board, last_reward):
+    def on_turn(self, board):
         # user_input = input()
         # if user_input == "w":
         #     return LoderunnerAction.GO_UP
@@ -263,7 +263,10 @@ class Environment:
             self.turn_num += 1
             self.count_undone_turns += 1
             self.__on_turn_start__(board)
-            action = self.__on_turn__(last_reward)
+            # action = self.__on_turn__(last_reward)
+            state = self.__get_current_nn_state__()
+            state = to_categorical(state, num_classes=14)
+            action = get_action_by_num(int(self.agent.act(state)))
             self.__on_turn_end__(action)
             if action == LoderunnerAction.SUICIDE:
                 action = LoderunnerAction.DO_NOTHING
