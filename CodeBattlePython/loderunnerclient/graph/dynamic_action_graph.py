@@ -152,7 +152,7 @@ class DynamicActionGraph:
     def set_node_unbuild(self, p: Point):
         self.graph.nodes[p][NodeProps.build] = False
 
-    def get_node_isbuild(self, p: Point):
+    def get_node_is_build(self, p: Point):
         return self.graph.nodes[p][NodeProps.build]
 
     def get_edge_actions(self, points: Tuple[Point, Point]):
