@@ -19,9 +19,9 @@ def local_main():
     dag = DynamicActionGraph(board, 10)
     
     my_pos = board.get_my_position()
-    ant = Ant(my_pos, dag, board)
+    ant = Ant(my_pos, dag, 10)
 
-    ant.walk(10)
+    ant.walk()
     print(ant.action_sequence)
 
 def server_main():

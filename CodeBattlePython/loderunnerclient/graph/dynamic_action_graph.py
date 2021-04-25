@@ -37,7 +37,7 @@ class DynamicActionGraph:
         self.rebuild_graph_in_point(self.hero_point, max_depth=self.max_depth)
 
     def rebuild_graph_in_point(self, p: Point, max_depth):
-        return fulfill_graph_edges_from_point(self.graph, self.initial_board, p, max_depth, copy=False)
+        return fulfill_graph_edges_from_point(self.graph, self.initial_board, p, max_depth, clone=False)
 
     def tick(self, point_action: Tuple):
         # update graph
