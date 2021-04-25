@@ -197,7 +197,8 @@ def fulfill_graph_edges_from_point(graph: nx.DiGraph, board: Board, start_point:
         right_down_point = Point(*(cur_coords + right_down_direction))
         right_down_is_break = graph.nodes[right_down_point][NodeProps.space].element.get_name() == "BRICK"
         if right_is_empty and right_down_is_break:
-            graph.add_edge(cur_point, right_down_point, **{EdgeProps.actions: [LoderunnerAction.DRILL_RIGHT]})
+            # graph.add_edge(cur_point, right_down_point, **{EdgeProps.actions: [LoderunnerAction.DRILL_RIGHT]})
+            pass
 
     report = dict()
     for object_name, points in met_objects.items():

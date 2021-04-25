@@ -35,7 +35,7 @@ def server_main():
     # env = Environment()
     gcb = GameClient(
         # change this url to your
-        "https://dojorena.io/codenjoy-contest/board/player/dojorena479?code=8090813955443195874"
+        "https://dojorena.io/codenjoy-contest/board/player/dojorena392?code=407418550408423703"
     )
     gcb.run(GreedyAntBot(10).choose_action)
 

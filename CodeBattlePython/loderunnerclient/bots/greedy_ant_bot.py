@@ -23,7 +23,7 @@ class Ant:
                  game_emulator=None, initial_transition: Tuple[Point, LoderunnerAction] = None):
         self.start_point: Point = p
         self.graph: DynamicActionGraph = copy(graph)
-        graph.graph = nx.DiGraph(graph.graph)
+        # graph.graph = nx.DiGraph(graph.graph)
         self.max_depth = max_depth
         self.game_emulator = game_emulator
         self.initial_transition: Tuple[Point, LoderunnerAction] = initial_transition
@@ -92,21 +92,22 @@ class Ant:
 
 
 class GreedyAntBot(AbstractBot):
-    def __init__(self, ant_count=20):
+    def __init__(self, ant_count=20, max_depth=20):
         super().__init__()
         self.board = None
         self.graph = None
         self.ant_count = ant_count
+        self.max_depth = max_depth
 
     def choose_action(self, board: Board) -> LoderunnerAction:
         # return LoderunnerAction.SUICIDE
         hero_pos = board.get_my_position()
 
-        dag = DynamicActionGraph(board, 20)
+        dag = DynamicActionGraph(board, self.max_depth)
 
         ants = []
         for i in range(self.ant_count):
-            ants.append(Ant(hero_pos, dag, 20).walk())
+            ants.append(Ant(hero_pos, dag, self.max_depth).walk())
 
         rewards = [ant.reward for ant in ants]
 
